@@ -22,3 +22,6 @@ six==1.16.0
 xlrd==2.0.1
 openpyxl==3.0.9
 # gunicorn==20.0.4
+pycountry==22.1.10
+PyMySQL~=1.0.2
+SQLAlchemy~=1.4.31
