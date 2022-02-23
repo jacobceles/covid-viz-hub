@@ -14,7 +14,7 @@ deaths_us_df = read_from_sql('test', 'deaths_us')
 
 """ Create graphs """
 fig1 = px.choropleth(deaths_global_df,
-                     locations="iso_alpha",
+                     locations="iso_alpha_3",
                      color="deaths",
                      hover_name="country/region",
                      animation_frame="time_period",
@@ -23,12 +23,12 @@ fig1 = px.choropleth(deaths_global_df,
                      height=600)
 
 fig2 = px.choropleth(deaths_global_df,
-                     locations="iso_alpha",
+                     locations="iso_alpha_3",
                      color="cumulative_deaths",
                      hover_name="country/region",
                      animation_frame="time_period",
                      color_continuous_scale='amp',
-                     title='Cumulative Death Count',
+                     labels={'time_period': 'Month', 'cumulative_deaths': 'Death Count', 'deaths': 'Death Count'},
                      height=600)
 
 fig3 = px.choropleth(deaths_us_df,
@@ -40,7 +40,7 @@ fig3 = px.choropleth(deaths_us_df,
                      hover_name="province_state",
                      scope="usa",
                      range_color=(0, 20),
-                     title='Deaths in US by State',
+                     labels={'time_period': 'Month', 'cumulative_deaths': 'Death Count', 'deaths': 'Death Count'},
                      height=600)
 
 fig4 = px.bar(deaths_us_normalized_df, x="death_percent", y="province_state", orientation='h')

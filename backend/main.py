@@ -38,7 +38,9 @@ countries_mapper = {
     'Tanzania': 'Tanzania, United Republic of'
 }
 deaths_global_df = clean_country_names(deaths_global_df, countries_mapper)
-deaths_global_df = get_country_iso_code(deaths_global_df)
+deaths_global_df = get_country_iso_code_2(deaths_global_df)
+deaths_global_df = get_country_iso_code_3(deaths_global_df)
+deaths_global_df = get_country_continent(deaths_global_df)
 
 # Deaths US - deaths_us_df, death_us_states_normalized
 ok_columns_set = {'uid', 'iso2', 'iso3', 'code3', 'fips', 'admin2', 'province_state',
@@ -118,6 +120,6 @@ deaths_us_states_normalized['death_percent'] = \
         deaths_us_states_normalized['deaths'] / deaths_us_states_normalized['population']
 
 # Write to SQL
-print(deaths_us_df.shape)
 print(write_to_sql(deaths_us_df, 'test', 'deaths_us'))
+print(write_to_sql(deaths_global_df, 'test', 'deaths_global'))
 print(write_to_sql(deaths_us_states_normalized, 'test', 'deaths_us_normalized'))

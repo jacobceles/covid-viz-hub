@@ -1,5 +1,7 @@
-import pandas as pd
 import pycountry
+import pandas as pd
+import pycountry_convert as pc
+
 from sqlalchemy import create_engine
 
 
@@ -92,12 +94,47 @@ def clean_state_names(df, states_mapper):
     return df
 
 
-def get_country_iso_code(df):
+def get_country_iso_code_2(df):
     """
     :param df: Input dataframe
-    :return: A dataframe with column 'iso_alpha' added which holds the iso country code for the respective country
+    :return: A dataframe with column 'iso_alpha_2' added which holds the iso country code for the respective country
     """
-    df['iso_alpha'] = df['country/region'].apply(lambda country: pycountry.countries.get(name=country).alpha_3)
+    df['iso_alpha_2'] = df['country/region'].apply(lambda country: pycountry.countries.get(name=country).alpha_2)
+    return df
+
+
+def get_country_iso_code_3(df):
+    """
+    :param df: Input dataframe
+    :return: A dataframe with column 'iso_alpha_3' added which holds the iso country code for the respective country
+    """
+    df['iso_alpha_3'] = df['country/region'].apply(lambda country: pycountry.countries.get(name=country).alpha_3)
+    return df
+
+
+def get_country_continent(df):
+    """
+    :param df: Input dataframe with iso iso_alpha_2 value
+    :return: A dataframe with column 'continent' added which holds the continent name for the respective country
+    """
+    continents = {
+        'NA': 'North America',
+        'SA': 'South America',
+        'AS': 'Asia',
+        'OC': 'Australia',
+        'AF': 'Africa',
+        'EU': 'Europe'
+    }
+    for index, row in df.iterrows():
+        country_code = row['iso_alpha_2']
+        if country_code == 'AQ':
+            df.loc[index, 'continent'] = 'Antarctica'
+        elif country_code == 'VA':
+            df.loc[index, 'continent'] = 'Europe'
+        elif country_code == 'TL':
+            df.loc[index, 'continent'] = 'Asia'
+        else:
+            df.loc[index, 'continent'] = continents[pc.country_alpha2_to_continent_code(country_code)]
     return df
 
 
