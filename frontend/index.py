@@ -9,8 +9,7 @@ from app import app
 from apps import home_layout, architecture_layout, global_layout, us_layout, individual_layout
 
 # Building the navigation bar
-dropdown = dbc.DropdownMenu(children=[dbc.DropdownMenuItem("Home", href="/home"),
-                                      dbc.DropdownMenuItem("Architecture", href="/architecture"),
+dropdown = dbc.DropdownMenu(children=[dbc.DropdownMenuItem("Architecture", href="/architecture"),
                                       dbc.DropdownMenuItem("Global", href="/global"),
                                       dbc.DropdownMenuItem("US", href="/us"),
                                       dbc.DropdownMenuItem("Individual", href="/individual"), ],
