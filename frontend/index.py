@@ -6,10 +6,11 @@ from dash.dependencies import Input, Output, State
 
 from app import app
 # from app import server # must add this line in order for the app to be deployed successfully on Heroku
-from apps import home_layout, global_layout, us_layout, individual_layout
+from apps import home_layout, architecture_layout, global_layout, us_layout, individual_layout
 
 # Building the navigation bar
-dropdown = dbc.DropdownMenu(children=[dbc.DropdownMenuItem("Home", href="/"),
+dropdown = dbc.DropdownMenu(children=[dbc.DropdownMenuItem("Home", href="/home"),
+                                      dbc.DropdownMenuItem("Architecture", href="/architecture"),
                                       dbc.DropdownMenuItem("Global", href="/global"),
                                       dbc.DropdownMenuItem("US", href="/us"),
                                       dbc.DropdownMenuItem("Individual", href="/individual"), ],
@@ -17,9 +18,9 @@ dropdown = dbc.DropdownMenu(children=[dbc.DropdownMenuItem("Home", href="/"),
 
 navbar = dbc.Navbar(
     dbc.Container([
-        html.A(dbc.Row([dbc.Col(html.Img(src="/assets/logo_001c.png", height="30px")),
+        html.A(dbc.Row([dbc.Col(html.Img(src="assets/logo.png", height="30px")),
                         dbc.Col(dbc.NavbarBrand("COVID VIZ-HUB", className="ml-2")), ],
-                       align="center", className="g-0", ), href="/global", ),
+                       align="center", className="g-0", ), href="/home", ),
         dbc.NavbarToggler(id="navbar-toggle2"),
         dbc.Collapse(dbc.Nav([dropdown], className="ms-auto", navbar=True), id="navbar-collapse2", navbar=True, ),
     ]), color="dark", dark=True, className="mb-4", )
@@ -41,7 +42,9 @@ app.layout = html.Div([
 @app.callback(dash.dependencies.Output('page-content', 'children'),
               [dash.dependencies.Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/global':
+    if pathname == '/architecture':
+        return architecture_layout.layout
+    elif pathname == '/global':
         return global_layout.layout
     elif pathname == '/us':
         return us_layout.layout

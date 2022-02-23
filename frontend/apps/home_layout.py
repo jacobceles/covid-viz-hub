@@ -1,60 +1,59 @@
-import plotly.express as px
-
-from dash import dcc
 from dash import html
-from backend.functions import read_from_sql
+from dash import dcc
+import dash_bootstrap_components as dbc
 
-
-""" Import data """
-# Read data from SQL
-deaths_us_normalized_df = read_from_sql('test', 'deaths_us_normalized')
-deaths_global_df = read_from_sql('test', 'deaths_global')
-deaths_us_df = read_from_sql('test', 'deaths_us')
-
-
-""" Create graphs """
-fig1 = px.choropleth(deaths_global_df,
-                     locations="iso_alpha",
-                     color="deaths",
-                     hover_name="country/region",
-                     animation_frame="time_period",
-                     color_continuous_scale='agsunset',
-                     title='Death Count',
-                     height=600)
-
-fig2 = px.choropleth(deaths_global_df,
-                     locations="iso_alpha",
-                     color="cumulative_deaths",
-                     hover_name="country/region",
-                     animation_frame="time_period",
-                     color_continuous_scale='amp',
-                     title='Cumulative Death Count',
-                     height=600)
-
-fig3 = px.choropleth(deaths_us_df,
-                     locations='state_code',
-                     color="deaths",
-                     animation_frame="time_period",
-                     color_continuous_scale="orrd",
-                     locationmode='USA-states',
-                     hover_name="province_state",
-                     scope="usa",
-                     range_color=(0, 20),
-                     title='Deaths in US by State',
-                     height=600)
-
-fig4 = px.bar(deaths_us_normalized_df, x="death_percent", y="province_state", orientation='h')
-
-states = ['Connecticut', 'Louisiana', 'Massachusetts', 'Mississippi', 'New York', 'New Jersey', 'Rhode Island']
-fig5 = px.sunburst(deaths_us_df[deaths_us_df['province_state'].isin(states)],
-                   path=['province_state', 'admin2'], values='deaths', height=600, template="plotly")
-
-
-"""" Layout"""
 layout = html.Div([
-    dcc.Graph(figure=fig1),
-    dcc.Graph(figure=fig2),
-    dcc.Graph(figure=fig3),
-    dcc.Graph(figure=fig4),
-    dcc.Graph(figure=fig5)
+    dbc.Container([
+        dbc.Row([
+            dbc.Col(html.H1("Welcome to the COVID-19 dashboard!", className="text-center"), className="mb-5 mt-5")
+        ]),
+        dbc.Row([
+            dbc.Col(html.H5(children='We help you take better, informed decisions.', style={'font-style': 'italic'}),
+                    className="mb-4 text-center")
+        ]),
+        dbc.Row([
+            dbc.Col(dcc.Markdown(
+                children='''
+                \nAccording to WHO, as of December 2020, COVID-19 had infected over 82M people and killed 
+                more than 3M worldwide. 
+                \nMillions of people are at risk of falling into extreme poverty, while the number of undernourished 
+                people are over 690 million.
+                \nWe need ways to help people assess the risks, understand what is happening around them - helping them 
+                take better, informed decisions.
+                \nDashboards are an iconic interface to understand the coronavirus pandemic. These visual displays 
+                gives us the information needed to act wisely.''',
+                style={'text-align': 'center', 'text-justify': 'inter-word', 'list-style-position': 'inside'}),
+                className="mb-5 text-center")
+        ]),
+        dbc.Row([
+            dbc.Col(dbc.Card(children=[html.H3(children='Get the original datasets used in this dashboard',
+                                               className="text-center"),
+                                       dbc.Row([dbc.Col(dbc.Button("CDC Data",
+                                                                   href="https://data.cdc.gov/Case-Surveillance/"
+                                                                        "COVID-19-Case-Surveillance-Public-Use-Data-"
+                                                                        "with-Ge/n8mc-b4w4",
+                                                                   color="primary", className="mt-3"),
+                                                        className="mx-auto"),
+                                                dbc.Col(dbc.Button("JHU Data",
+                                                                   href="https://github.com/CSSEGISandData/COVID-19/"
+                                                                        "tree/master/csse_covid_19_data/"
+                                                                        "csse_covid_19_time_series",
+                                                                   color="primary", className="mt-3"),
+                                                        className="mx-auto")],
+                                               justify="center")],
+                             body=True, color="dark", outline=True), width=4, className="mb-4 text-center"),
+
+            dbc.Col(dbc.Card(children=[html.H3(children='Access the code used to build this dashboard',
+                                               className="text-center"),
+                                       dbc.Button("GitHub", href="https://github.com/jacobceles/covid-viz-hub",
+                                                  color="primary", className="mt-3"), ],
+                             body=True, color="dark", outline=True), width=4, className="mb-4 text-center"),
+            dbc.Col(dbc.Card(children=[html.H3(children='Read about the architecture used for this dashboard',
+                                               className="text-center"),
+                                       dbc.Button("Architecture", href="https://data.cdc.gov/browse?tags=covid-19",
+                                                  color="primary", className="mt-3"), ],
+                             body=True, color="dark", outline=True), width=4, className="mb-4 text-center")
+        ], className="mb-5"),
+    ])
+
 ])
