@@ -25,3 +25,4 @@ openpyxl==3.0.9
 pycountry==22.1.10
 PyMySQL~=1.0.2
 SQLAlchemy~=1.4.31
+dash-bootstrap-components~=1.0.3
