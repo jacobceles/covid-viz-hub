@@ -48,7 +48,7 @@ ok_columns_set = {'uid', 'iso2', 'iso3', 'code3', 'fips', 'admin2', 'province_st
 ok_columns_list = list(ok_columns_set)
 deaths_us_df = rename_date_columns(deaths_us_df, ok_columns_set)
 deaths_us_df = pivot_date_columns(deaths_us_df, ok_columns_list, 'deaths')
-deaths_us_df = get_cumulative_deaths(deaths_us_df, ['province_state'])
+deaths_us_df = get_cumulative_deaths(deaths_us_df, ['province_state', 'admin2'])
 not_ok_states = ['American Samoa', 'Diamond Princess', 'Grand Princess', 'Guam', 'Puerto Rico',
                  'Northern Mariana Islands', 'Virgin Islands', 'District of Columbia']
 deaths_us_df = remove_unfit_states(deaths_us_df, not_ok_states)

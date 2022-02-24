@@ -46,7 +46,6 @@ cumulative_deaths_choropleth = px.choropleth(deaths_global_df,
                                                      'cumulative_deaths': 'Cumulative Death Count'},
                                              height=600)
 
-# change to app.layout if running as single page app instead
 layout = html.Div([
     dbc.Container([
         dbc.Row([dbc.Col(html.H1(children='COVID-19 Worldwide at a glance'), className="mb-2")]),
@@ -58,7 +57,7 @@ layout = html.Div([
         dcc.RadioItems(id='table_type', options=[{'label': i, 'value': i} for i in ['Condensed table', 'Full table']],
                        value='Condensed table', labelStyle={'display': 'inline-block', "margin-right": "20px"},
                        style={"text-align": "center"}),
-        dash_table.DataTable(id='datatable', style_table={'overflowX': 'scroll', 'padding': 10},
+        dash_table.DataTable(id='datatable_global', style_table={'overflowX': 'scroll', 'padding': 10},
                              style_header={'backgroundColor': '#25597f', 'color': 'white'},
                              style_cell={'backgroundColor': 'white', 'color': 'black', 'fontSize': 13,
                                          'font-family': 'Nunito Sans', "text-align": "center"}),
@@ -98,8 +97,8 @@ layout = html.Div([
 
 
 # choose between condensed table and full table
-@app.callback([Output('datatable', 'data'),
-               Output('datatable', 'columns')],
+@app.callback([Output('datatable_global', 'data'),
+               Output('datatable_global', 'columns')],
               [Input('table_type', 'value')])
 def update_columns(value):
     df = deaths_global_df.tail(1)
