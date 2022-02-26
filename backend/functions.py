@@ -5,38 +5,78 @@ import pycountry_convert as pc
 from sqlalchemy import create_engine
 
 
-def rename_date_columns(df, ok_columns):
+def convert_columns_to_lowercase(df):
     """
     :param df: Input dataframe
-    :param ok_columns: List of columns which are not dates
-    :return: A dataframe which converts and groups the date columns to a month level
+    :return: Output dataframe with all column names in lowercase
     """
-    rename_columns = set(df.columns) - ok_columns
-    for col in rename_columns:
-        mm, dd, yy = col.split("/")
-        new_name = '20' + yy + "-" + "{:02}".format(int(mm))
-        df.rename(columns={col: new_name}, inplace=True)
-    return df.groupby(df.columns, axis=1).sum()
-
-
-def pivot_date_columns(df, ok_columns, value_name):
-    """
-    :param df: Input dataframe
-    :param ok_columns: List of columns which are not dates
-    :param value_name: Name of the value column
-    :return: A dataframe
-    """
-    return df.melt(id_vars=ok_columns, var_name="time_period", value_name=value_name)
-
-
-def get_cumulative_deaths(df, level_list):
-    """
-    :param df: Input dataframe
-    :param level_list: List of columns on which the cumulative deaths are to be calculated
-    :return: A dataframe
-    """
-    df['cumulative_deaths'] = df.groupby(level_list)['deaths'].cumsum()
+    df.columns = map(str.lower, df.columns)
     return df
+
+
+def replace_character_in_column_names(df, char_to_replace, char_to_replace_with):
+    """
+    :param df: Input dataframe
+    :param char_to_replace: Character to be replaced
+    :param char_to_replace_with: Character to be replaced with
+    :return: Output dataframe with all characters in column names replaced
+    """
+    df.columns = df.columns.str.replace(char_to_replace, char_to_replace_with)
+    return df
+
+
+def delete_columns(df, column_names):
+    """
+    :param df: Input dataframe
+    :param column_names: List of columns to be deleted as a list
+    :return: Output dataframe with columns deleted
+    """
+    for col in column_names:
+        del df[col]
+    return df
+
+
+def rename_date_columns(df, ok_columns, split_character):
+    """
+    :param df: Input dataframe
+    :param ok_columns: Set of columns which are not dates
+    :param split_character: Character based on which date is to be split
+    :return: A dataframe with only the month end date columns
+    """
+    date_columns = set(df.columns) - ok_columns
+    for col in date_columns:
+        mm, dd, yy = col.split(split_character)
+        current_date = ("{:02}"+"/"+dd+"/20"+yy).format(int(mm))
+        current_month_end_date = pd.Period(year=int("20"+yy), month=int(mm), day=int(dd), freq='M').end_time.date()\
+            .strftime('%m/%d/%Y')
+        if current_date != current_month_end_date:
+            del df[col]
+        else:
+            new_name = '20'+yy+"-"+"{:02}".format(int(mm))
+            df.rename(columns={col: new_name}, inplace=True)
+    return df
+
+
+def melt_columns_to_rows(df, ok_columns, var_name, value_name):
+    """
+    :param df: Input dataframe
+    :param ok_columns: Set of columns which are not to be transformed
+    :param var_name: Name of the new column variable after melting
+    :param value_name: Name of the new column which holds the value after melting
+    :return: A dataframe after melting multiple columns into just two columns
+    """
+    return df.melt(id_vars=ok_columns, var_name=var_name, value_name=value_name)
+
+
+def unroll_cumulative_sum(df, non_str_columns, group_by_column):
+    """
+    :param df: Input dataframe
+    :param non_str_columns: List of non string columns in dataframe
+    :param group_by_column: List of columns based on which grouping should happen
+    :return: Output dataframe with a new column after unrolling cumulative sum
+    """
+    unrolled_df = df[non_str_columns].groupby(group_by_column, as_index=False).diff().fillna(df)
+    return pd.concat([df, unrolled_df], axis=1)
 
 
 def remove_unfit_countries(df, not_ok_countries):
@@ -46,7 +86,7 @@ def remove_unfit_countries(df, not_ok_countries):
     :return: A dataframe
     """
     for country in not_ok_countries:
-        df = df[(df['country/region'] != country)]
+        df = df[(df['country'] != country)]
     return df
 
 
@@ -80,7 +120,7 @@ def clean_country_names(df, countries_mapper):
     :param countries_mapper: Dictionary which maps countries to their standardized names
     :return: A dataframe
     """
-    df['country/region'] = df['country/region'].replace(countries_mapper, inplace=False)
+    df['country'] = df['country'].replace(countries_mapper, inplace=False)
     return df
 
 
@@ -99,7 +139,7 @@ def get_country_iso_code_2(df):
     :param df: Input dataframe
     :return: A dataframe with column 'iso_alpha_2' added which holds the iso country code for the respective country
     """
-    df['iso_alpha_2'] = df['country/region'].apply(lambda country: pycountry.countries.get(name=country).alpha_2)
+    df['iso_alpha_2'] = df['country'].apply(lambda country: pycountry.countries.get(name=country).alpha_2)
     return df
 
 
@@ -108,7 +148,7 @@ def get_country_iso_code_3(df):
     :param df: Input dataframe
     :return: A dataframe with column 'iso_alpha_3' added which holds the iso country code for the respective country
     """
-    df['iso_alpha_3'] = df['country/region'].apply(lambda country: pycountry.countries.get(name=country).alpha_3)
+    df['iso_alpha_3'] = df['country'].apply(lambda country: pycountry.countries.get(name=country).alpha_3)
     return df
 
 

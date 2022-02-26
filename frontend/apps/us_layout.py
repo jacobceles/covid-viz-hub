@@ -11,9 +11,9 @@ from backend.functions import read_from_sql
 
 """ Import data """
 # Read data from SQL
-deaths_us_normalized_df = read_from_sql('test', 'deaths_us_normalized')
 deaths_us_df = read_from_sql('test', 'deaths_us')
-
+deaths_us_normalized_df = read_from_sql('test', 'deaths_us_normalized')
+# deaths_us_ts_df = deaths_us_df.groupby('time_period', as_index=False).sum()
 
 """ Create graphs """
 deaths_choropleth = px.choropleth(deaths_us_df,
@@ -22,19 +22,19 @@ deaths_choropleth = px.choropleth(deaths_us_df,
                                   animation_frame="time_period",
                                   color_continuous_scale="orrd",
                                   locationmode='USA-states',
-                                  hover_name="province_state",
+                                  hover_name="state",
                                   scope="usa",
                                   range_color=(0, 1000000),
                                   labels={'state_code': 'State', 'deaths': 'Death Count', 'time_period': 'Month'},
                                   height=600)
 
-deaths_us_bar = px.bar(deaths_us_normalized_df, x="death_percent", y="province_state", orientation='h',
-                       labels={'province_state': 'State', 'death_percent': 'Percentage of deaths'})
+deaths_us_bar = px.bar(deaths_us_normalized_df, x="death_percent", y="state", orientation='h',
+                       labels={'state': 'State', 'death_percent': 'Percentage of deaths'})
 
 states = ['Connecticut', 'Louisiana', 'Massachusetts', 'Mississippi', 'New York', 'New Jersey', 'Rhode Island']
-deaths_us_sunburst = px.sunburst(deaths_us_df[deaths_us_df['province_state'].isin(states)],
-                                 path=['province_state', 'admin2'], values='deaths', height=600, template="plotly",
-                                 labels={'province_state': 'State', 'admin2': 'Provinces', 'deaths': 'Death Count'})
+deaths_us_sunburst = px.sunburst(deaths_us_df[deaths_us_df['state'].isin(states)],
+                                 path=['state', 'province'], values='deaths', height=600, template="plotly",
+                                 labels={'state': 'State', 'province': 'Provinces', 'deaths': 'Death Count'})
 
 
 """" Layout"""
@@ -59,6 +59,9 @@ layout = html.Div([
                                           className="text-center text-light bg-dark"),
                                   body=True, color="dark"),
                          className="mt-4 mb-4")]),
+        dbc.Row([dbc.Col(html.H5(children='Daily COVID-19 cases in the USA', className="text-center"),
+                         className="mt-4")]),
+        dcc.Graph(id='graph_by_period', hoverData={'points': [{'x': '11-May'}]}),
 
         dbc.Row([dbc.Col(dbc.Card(html.H3(children='Figures by states', className="text-center text-light bg-dark"),
                                   body=True, color="dark"),
@@ -79,9 +82,8 @@ layout = html.Div([
 def update_columns(value):
     df = deaths_us_df.tail(1)
 
-    condensed_col = ['combined_key', 'population', 'time_period', 'deaths', 'cumulative_deaths']
-    full_col = ['index', 'lat', 'iso2', 'uid', 'province_state', 'fips', 'combined_key', 'admin2', 'country_region',
-                'code3', 'population', 'iso3', 'long_', 'time_period', 'deaths', 'cumulative_deaths', 'state_code']
+    condensed_col = ['state', 'province', 'population', 'time_period', 'deaths', 'cumulative_deaths']
+    full_col = ['index', 'province', 'state', 'population', 'time_period', 'cumulative_deaths', 'deaths', 'state_code']
 
     columns = [{"name": i, "id": i} for i in full_col]
     data = df.to_dict('records')
@@ -90,3 +92,25 @@ def update_columns(value):
         data = df.to_dict('records')
 
     return data, columns
+
+
+# allow for easy sieving of data to see how the situation has changed.
+# can observe whether government measures are effective in reducing the number of cases.
+@app.callback(Output('graph_by_period', 'figure'),
+              [Input('covid_period', 'value')])
+def update_graph(covid_period_name):
+    # dff = deaths_us_ts_df[deaths_us_ts_df.Period == covid_period_name]
+    # # not sure why this doesn't work, Daily Confirmed is an invalid key
+    # col = ['Daily Imported', 'Daily Local transmission']
+    # dff['total'] = dff[col].sum(axis=1)
+    # data = [go.Scatter(x=dff['Date'], y=dff['total'],
+    #                    mode='lines+markers',name='Daily confirmed')]
+    # layout = go.Layout(
+    #     yaxis={'title': "Cases"},
+    #     paper_bgcolor = 'rgba(0,0,0,0)',
+    #     plot_bgcolor = 'rgba(0,0,0,0)',
+    #     template = "seaborn",
+    #     margin=dict(t=20)
+    # )
+    # return {'data': data, 'layout': layout}
+    return None

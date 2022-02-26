@@ -1,125 +1,87 @@
 from functions import *
 
-# Read input
-deaths_us_df = pd.read_csv("data/deaths_us.csv")
-deaths_us_df.columns = map(str.lower, deaths_us_df.columns)
-confirmed_us_df = pd.read_csv("data/confirmed_us.csv")
-confirmed_us_df.columns = map(str.lower, confirmed_us_df.columns)
-deaths_global_df = pd.read_csv("data/deaths_global.csv")
-deaths_global_df.columns = map(str.lower, deaths_global_df.columns)
 
-# Deaths Global - deaths_global_df
-deaths_global_df = rename_date_columns(deaths_global_df, {'province/state', 'country/region', 'lat', 'long'})
-deaths_global_df = pivot_date_columns(deaths_global_df, ['country/region', 'province/state', 'lat', 'long'], 'deaths')
-deaths_global_df = get_cumulative_deaths(deaths_global_df, ['country/region'])
-deaths_global_df = remove_unfit_countries(deaths_global_df, ['Kosovo', 'Diamond Princess', 'MS Zaandam'])
-countries_mapper = {
-    'Congo (Kinshasa)': 'Congo',
-    'West Bank and Gaza': 'Israel',
-    'Congo (Brazzaville)': 'Congo',
-    'Holy See': 'Holy See (Vatican City State)',
-    'Korea, South': 'Korea, Republic of',
-    'Summer Olympics 2020': 'Japan',
-    'Burma': 'Myanmar',
-    'US': 'United States',
-    'Winter Olympics 2022': 'China',
-    'Taiwan*': 'Taiwan, Province of China',
-    "Cote d'Ivoire": "Côte d'Ivoire",
-    'Moldova': 'Moldova, Republic of',
-    'Syria': 'Syrian Arab Republic',
-    'Venezuela': 'Venezuela, Bolivarian Republic of',
-    'Iran': 'Iran, Islamic Republic of',
-    'Russia': 'Russian Federation',
-    'Micronesia': 'Micronesia, Federated States of',
-    'Bolivia': 'Bolivia, Plurinational State of',
-    'Laos': "Lao People's Democratic Republic",
-    'Brunei': 'Brunei Darussalam',
-    'Vietnam': 'Viet Nam',
-    'Tanzania': 'Tanzania, United Republic of'
-}
-deaths_global_df = clean_country_names(deaths_global_df, countries_mapper)
-deaths_global_df = get_country_iso_code_2(deaths_global_df)
-deaths_global_df = get_country_iso_code_3(deaths_global_df)
-deaths_global_df = get_country_continent(deaths_global_df)
+def death_globals(df):
+    # Deaths Global - deaths_global_df
+    df = convert_columns_to_lowercase(df)
+    df = replace_character_in_column_names(df, "/", "_")
+    df = delete_columns(df, ['province_state', 'lat', 'long'])
+    df = rename_date_columns(df, {'country_region'}, '_')
+    df = melt_columns_to_rows(df, ['country_region'], "time_period", "cumulative_deaths")
+    df = df.groupby(['country_region', 'time_period'], as_index=False).sum()
+    df = unroll_cumulative_sum(df, ['country_region', 'cumulative_deaths'], ['country_region'])
+    df.columns = ['country', 'time_period', 'cumulative_deaths', 'deaths']
+    df = remove_unfit_countries(df, ['Kosovo', 'Diamond Princess', 'MS Zaandam', 'Estonia',
+                                     'Kyrgyzstan', 'Monaco', 'Sao Tome and Principe', 'Venezuela'])
+    countries_mapper = {'Congo (Kinshasa)': 'Congo', 'West Bank and Gaza': 'Israel', 'Congo (Brazzaville)': 'Congo',
+                        'Holy See': 'Holy See (Vatican City State)', 'Korea, South': 'Korea, Republic of',
+                        'Summer Olympics 2020': 'Japan', 'Burma': 'Myanmar', 'US': 'United States',
+                        'Winter Olympics 2022': 'China', 'Taiwan*': 'Taiwan, Province of China',
+                        "Cote d'Ivoire": "Côte d'Ivoire", 'Moldova': 'Moldova, Republic of',
+                        'Syria': 'Syrian Arab Republic', 'Venezuela': 'Venezuela, Bolivarian Republic of',
+                        'Iran': 'Iran, Islamic Republic of', 'Russia': 'Russian Federation',
+                        'Micronesia': 'Micronesia, Federated States of', 'Bolivia': 'Bolivia, Plurinational State of',
+                        'Laos': "Lao People's Democratic Republic", 'Brunei': 'Brunei Darussalam',
+                        'Vietnam': 'Viet Nam', 'Tanzania': 'Tanzania, United Republic of'}
+    df = clean_country_names(df, countries_mapper)
+    df = get_country_iso_code_2(df)
+    df = get_country_iso_code_3(df)
+    df = get_country_continent(df)
+    df.reset_index(level=0, inplace=True, drop=True)
+    return df
 
-# Deaths US - deaths_us_df, death_us_states_normalized
-ok_columns_set = {'uid', 'iso2', 'iso3', 'code3', 'fips', 'admin2', 'province_state',
-                  'country_region', 'lat', 'long_', 'combined_key', 'population'}
-ok_columns_list = list(ok_columns_set)
-deaths_us_df = rename_date_columns(deaths_us_df, ok_columns_set)
-deaths_us_df = pivot_date_columns(deaths_us_df, ok_columns_list, 'deaths')
-deaths_us_df = get_cumulative_deaths(deaths_us_df, ['province_state', 'admin2'])
-not_ok_states = ['American Samoa', 'Diamond Princess', 'Grand Princess', 'Guam', 'Puerto Rico',
-                 'Northern Mariana Islands', 'Virgin Islands', 'District of Columbia']
-deaths_us_df = remove_unfit_states(deaths_us_df, not_ok_states)
-deaths_us_df = remove_unfit_provinces(deaths_us_df, None)
-states_mapper = {
-    'Alaska': 'AK',
-    'Alabama': 'AL',
-    'Arkansas': 'AR',
-    'Arizona': 'AZ',
-    'California': 'CA',
-    'Colorado': 'CO',
-    'Connecticut': 'CT',
-    'District of Columbia': 'DC',
-    'Delaware': 'DE',
-    'Florida': 'FL',
-    'Georgia': 'GA',
-    'Hawaii': 'HI',
-    'Iowa': 'IA',
-    'Idaho': 'ID',
-    'Illinois': 'IL',
-    'Indiana': 'IN',
-    'Kansas': 'KS',
-    'Kentucky': 'KY',
-    'Louisiana': 'LA',
-    'Massachusetts': 'MA',
-    'Maryland': 'MD',
-    'Maine': 'ME',
-    'Michigan': 'MI',
-    'Minnesota': 'MN',
-    'Missouri': 'MO',
-    'Mississippi': 'MS',
-    'Montana': 'MT',
-    'North Carolina': 'NC',
-    'North Dakota': 'ND',
-    'Nebraska': 'NE',
-    'New Hampshire': 'NH',
-    'New Jersey': 'NJ',
-    'New Mexico': 'NM',
-    'Nevada': 'NV',
-    'New York': 'NY',
-    'Ohio': 'OH',
-    'Oklahoma': 'OK',
-    'Oregon': 'OR',
-    'Pennsylvania': 'PA',
-    'Rhode Island': 'RI',
-    'South Carolina': 'SC',
-    'South Dakota': 'SD',
-    'Tennessee': 'TN',
-    'Texas': 'TX',
-    'Utah': 'UT',
-    'Virginia': 'VA',
-    'Vermont': 'VT',
-    'Washington': 'WA',
-    'Wisconsin': 'WI',
-    'West Virginia': 'WV',
-    'Wyoming': 'WY'
-}
-deaths_us_df = clean_state_names(deaths_us_df, states_mapper)
-# Create new dataframes from deaths_us_df
-death_us_states = deaths_us_df.groupby('province_state', as_index=False)['deaths'].sum()
-population_us_states = deaths_us_df[deaths_us_df['time_period'] == deaths_us_df['time_period'].max()] \
-    [['province_state', 'population']].groupby('province_state', as_index=False).sum()
-death_us_states.set_index(['province_state'], inplace=True)
-population_us_states.set_index(['province_state'], inplace=True)
-deaths_us_states_normalized = death_us_states.join(population_us_states).reset_index()
-death_us_states.reset_index(level=0, inplace=True)
-population_us_states.reset_index(level=0, inplace=True)
-deaths_us_states_normalized['death_percent'] = \
-        deaths_us_states_normalized['deaths'] / deaths_us_states_normalized['population']
 
-# Write to SQL
-print(write_to_sql(deaths_us_df, 'test', 'deaths_us'))
-print(write_to_sql(deaths_global_df, 'test', 'deaths_global'))
-print(write_to_sql(deaths_us_states_normalized, 'test', 'deaths_us_normalized'))
+def deaths_us(df):
+    # Deaths US - deaths_us_df, death_us_states_normalized
+    df = convert_columns_to_lowercase(df)
+    df = replace_character_in_column_names(df, "/", "_")
+    df = delete_columns(df, ['uid', 'iso2', 'iso3', 'code3', 'fips', 'country_region', 'lat', 'long_', 'combined_key'])
+    df = rename_date_columns(df, {'admin2', 'province_state', 'population'}, '_')
+    df = melt_columns_to_rows(df, ['admin2', 'province_state', 'population'], "time_period", "cumulative_deaths")
+    df = unroll_cumulative_sum(df, ['admin2', 'province_state', 'cumulative_deaths'], ['admin2', 'province_state'])
+    not_ok_states = ['American Samoa', 'Diamond Princess', 'Grand Princess', 'Guam', 'Puerto Rico',
+                     'Northern Mariana Islands', 'Virgin Islands', 'District of Columbia']
+    df = remove_unfit_states(df, not_ok_states)
+    df = remove_unfit_provinces(df, None)
+    states_mapper = {'Alaska': 'AK', 'Alabama': 'AL', 'Arkansas': 'AR', 'Arizona': 'AZ', 'California': 'CA',
+                     'Colorado': 'CO', 'Connecticut': 'CT', 'District of Columbia': 'DC', 'Delaware': 'DE',
+                     'Florida': 'FL', 'Georgia': 'GA', 'Hawaii': 'HI', 'Iowa': 'IA', 'Idaho': 'ID', 'Illinois': 'IL',
+                     'Indiana': 'IN', 'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Massachusetts': 'MA',
+                     'Maryland': 'MD', 'Maine': 'ME', 'Michigan': 'MI', 'Minnesota': 'MN', 'Missouri': 'MO',
+                     'Mississippi': 'MS', 'Montana': 'MT', 'North Carolina': 'NC', 'North Dakota': 'ND',
+                     'Nebraska': 'NE', 'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM', 'Nevada': 'NV',
+                     'New York': 'NY', 'Ohio': 'OH', 'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA',
+                     'Rhode Island': 'RI', 'South Carolina': 'SC', 'South Dakota': 'SD', 'Tennessee': 'TN',
+                     'Texas': 'TX', 'Utah': 'UT', 'Virginia': 'VA', 'Vermont': 'VT', 'Washington': 'WA',
+                     'Wisconsin': 'WI', 'West Virginia': 'WV', 'Wyoming': 'WY'}
+    df = clean_state_names(df, states_mapper)
+    df.columns = ['province', 'state', 'population', 'time_period', 'cumulative_deaths', 'deaths', 'state_code']
+    df.reset_index(level=0, inplace=True, drop=True)
+    return df
+
+
+def deaths_us_normalized(df):
+    # Create new normalized dataframe for states
+    death_us_states = df[['state', 'cumulative_deaths']].groupby('state', as_index=False).sum()
+    population_us_states = df[['state', 'population']].groupby('state', as_index=False).sum()
+
+    death_us_states.set_index(['state'], inplace=True)
+    population_us_states.set_index(['state'], inplace=True)
+    normalized_df = death_us_states.join(population_us_states).reset_index()
+    death_us_states.reset_index(level=0, inplace=True, drop=True)
+    population_us_states.reset_index(level=0, inplace=True, drop=True)
+
+    normalized_df['death_percent'] = normalized_df['cumulative_deaths'] / normalized_df['population']
+    return normalized_df
+
+
+if __name__ == '__main__':
+    deaths_global_df = death_globals(pd.read_csv("data/deaths_global.csv"))
+    deaths_us_df = deaths_us(pd.read_csv("data/deaths_us.csv"))
+    deaths_us_df_latest = deaths_us_df[deaths_us_df['time_period'] == deaths_us_df['time_period'].max()]
+    deaths_us_states_normalized = deaths_us_normalized(deaths_us_df_latest)
+
+    # Write to SQL
+    print(write_to_sql(deaths_us_df, 'test', 'deaths_us'))
+    print(write_to_sql(deaths_global_df, 'test', 'deaths_global'))
+    print(write_to_sql(deaths_us_states_normalized, 'test', 'deaths_us_normalized'))
