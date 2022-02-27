@@ -2,6 +2,7 @@ import pycountry
 import pandas as pd
 import pycountry_convert as pc
 
+from datetime import datetime
 from sqlalchemy import create_engine
 
 
@@ -41,19 +42,33 @@ def rename_date_columns(df, ok_columns, split_character):
     :param df: Input dataframe
     :param ok_columns: Set of columns which are not dates
     :param split_character: Character based on which date is to be split
-    :return: A dataframe with only the month end date columns
+    :return: A dataframe with the date columns renamed
     """
     date_columns = set(df.columns) - ok_columns
     for col in date_columns:
         mm, dd, yy = col.split(split_character)
-        current_date = ("{:02}"+"/"+dd+"/20"+yy).format(int(mm))
-        current_month_end_date = pd.Period(year=int("20"+yy), month=int(mm), day=int(dd), freq='M').end_time.date()\
-            .strftime('%m/%d/%Y')
+        new_name = ("{:02}/{:02}/20" + yy).format(int(mm), int(dd))
+        df.rename(columns={col: new_name}, inplace=True)
+    return df
+
+
+def convert_to_month_wise_df(df, ok_columns, split_character):
+    """
+    for every row, for each month, put the greatest value of that month in the final column
+    :param df: Input dataframe
+    :param ok_columns: Set of columns which are not dates
+    :param split_character: Character based on which date is to be split
+    :return: A dataframe with only the month end date columns
+    """
+    date_columns = set(df.columns) - ok_columns
+    for current_date in date_columns:
+        mm, dd, yy = map(int, current_date.split(split_character))
+        current_month_end_date = pd.Period(year=yy, month=mm, day=dd, freq='M').end_time.date().strftime('%m/%d/%Y')
         if current_date != current_month_end_date:
-            del df[col]
+            del df[current_date]
         else:
-            new_name = '20'+yy+"-"+"{:02}".format(int(mm))
-            df.rename(columns={col: new_name}, inplace=True)
+            month_name = str(yy) + "-" + "{:02}".format(int(mm))
+            df.rename(columns={current_date: month_name}, inplace=True)
     return df
 
 

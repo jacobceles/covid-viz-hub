@@ -7,6 +7,7 @@ def death_globals(df):
     df = replace_character_in_column_names(df, "/", "_")
     df = delete_columns(df, ['province_state', 'lat', 'long'])
     df = rename_date_columns(df, {'country_region'}, '_')
+    df = convert_to_month_wise_df(df, {'country_region'}, '/')
     df = melt_columns_to_rows(df, ['country_region'], "time_period", "cumulative_deaths")
     df = df.groupby(['country_region', 'time_period'], as_index=False).sum()
     df = unroll_cumulative_sum(df, ['country_region', 'cumulative_deaths'], ['country_region'])
@@ -27,6 +28,7 @@ def death_globals(df):
     df = get_country_iso_code_2(df)
     df = get_country_iso_code_3(df)
     df = get_country_continent(df)
+    df['deaths'].clip(lower=0, inplace=True)
     df.reset_index(level=0, inplace=True, drop=True)
     return df
 
@@ -37,7 +39,9 @@ def deaths_us(df):
     df = replace_character_in_column_names(df, "/", "_")
     df = delete_columns(df, ['uid', 'iso2', 'iso3', 'code3', 'fips', 'country_region', 'lat', 'long_', 'combined_key'])
     df = rename_date_columns(df, {'admin2', 'province_state', 'population'}, '_')
+    df = convert_to_month_wise_df(df, {'admin2', 'province_state', 'population'}, '/')
     df = melt_columns_to_rows(df, ['admin2', 'province_state', 'population'], "time_period", "cumulative_deaths")
+    print(df[df['province_state'] == 'North Dakota'])
     df = unroll_cumulative_sum(df, ['admin2', 'province_state', 'cumulative_deaths'], ['admin2', 'province_state'])
     not_ok_states = ['American Samoa', 'Diamond Princess', 'Grand Princess', 'Guam', 'Puerto Rico',
                      'Northern Mariana Islands', 'Virgin Islands', 'District of Columbia']
@@ -56,6 +60,7 @@ def deaths_us(df):
                      'Wisconsin': 'WI', 'West Virginia': 'WV', 'Wyoming': 'WY'}
     df = clean_state_names(df, states_mapper)
     df.columns = ['province', 'state', 'population', 'time_period', 'cumulative_deaths', 'deaths', 'state_code']
+    df['deaths'].clip(lower=0, inplace=True)
     df.reset_index(level=0, inplace=True, drop=True)
     return df
 
@@ -82,6 +87,6 @@ if __name__ == '__main__':
     deaths_us_states_normalized = deaths_us_normalized(deaths_us_df_latest)
 
     # Write to SQL
-    print(write_to_sql(deaths_us_df, 'test', 'deaths_us'))
-    print(write_to_sql(deaths_global_df, 'test', 'deaths_global'))
-    print(write_to_sql(deaths_us_states_normalized, 'test', 'deaths_us_normalized'))
+    # print(write_to_sql(deaths_us_df, 'test', 'deaths_us'))
+    # print(write_to_sql(deaths_global_df, 'test', 'deaths_global'))
+    # print(write_to_sql(deaths_us_states_normalized, 'test', 'deaths_us_normalized'))

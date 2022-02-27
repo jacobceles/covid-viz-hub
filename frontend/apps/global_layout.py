@@ -20,31 +20,33 @@ deaths_global_latest_df = deaths_global_df[deaths_global_df['time_period'] == la
     .groupby('continent', as_index=False).sum()
 
 """ Create graphs """
-deaths_pie = px.pie(deaths_global_latest_df, values='deaths', names='continent')
+deaths_pie = px.pie(deaths_global_latest_df, values='deaths', names='continent',
+                    labels={'continent': 'Continent', 'deaths': 'Death Count'})
 deaths_line = px.line(deaths_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
-                      x="time_period", y="deaths", color="continent",
-                      labels={'time_period': 'Month', 'deaths': 'Death Count', 'continent': 'Continents'})
+                      x="time_period", y="deaths", color="continent", markers=True,
+                      labels={'time_period': 'Month', 'deaths': 'Death Count', 'continent': 'Continent'})
 deaths_choropleth = px.choropleth(deaths_global_df,
                                   locations="iso_alpha_3",
                                   color="deaths",
                                   hover_name="country",
                                   animation_frame="time_period",
                                   color_continuous_scale='agsunset',
-                                  labels={'time_period': 'Month', 'deaths': 'Death Count'},
+                                  labels={'time_period': 'Month', 'deaths': 'Death Count', 'iso_alpha_3': 'ISO Code'},
                                   height=600)
 
-cumulative_deaths_pie = px.pie(deaths_global_latest_df, values='cumulative_deaths', names='continent')
+cumulative_deaths_pie = px.pie(deaths_global_latest_df, values='cumulative_deaths', names='continent',
+                               labels={'continent': 'Continent', 'cumulative_deaths': 'Cumulative Death Count'})
 cumulative_deaths_line = px.line(deaths_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
-                                 x="time_period", y="cumulative_deaths", color="continent",
-                                 labels={'time_period': 'Month', 'deaths': 'Cumulative Death Count',
-                                         'continent': 'Continents'})
+                                 x="time_period", y="cumulative_deaths", color="continent", markers=True,
+                                 labels={'time_period': 'Month', 'cumulative_deaths': 'Cumulative Death Count',
+                                         'continent': 'Continent'})
 cumulative_deaths_choropleth = px.choropleth(deaths_global_df,
                                              locations="iso_alpha_3",
                                              color="cumulative_deaths",
                                              hover_name="country",
                                              animation_frame="time_period",
                                              color_continuous_scale='amp',
-                                             labels={'time_period': 'Month',
+                                             labels={'time_period': 'Month', 'iso_alpha_3': 'ISO Code',
                                                      'cumulative_deaths': 'Cumulative Death Count'},
                                              height=600)
 
@@ -126,12 +128,12 @@ def update_graph(countries_name):
     dfc = deaths_global_df.copy()
     dfc = dfc[dfc['country'].isin(countries_name)]
 
-    deaths_line_country = px.line(dfc, x="time_period", y="deaths", color="country",
+    deaths_line_country = px.line(dfc, x="time_period", y="deaths", color="country", markers=True,
                                   labels={'time_period': 'Month', 'deaths': 'Death Count',
-                                          'country': 'Countries'})
-    cumulative_deaths_line_country = px.line(dfc, x="time_period", y="cumulative_deaths", color="country",
+                                          'country': 'Country'})
+    cumulative_deaths_line_country = px.line(dfc, x="time_period", y="cumulative_deaths", color="country", markers=True,
                                              labels={'time_period': 'Month',
                                                      'cumulative_deaths': 'Cumulative Death Count',
-                                                     'country': 'Countries'})
+                                                     'country': 'Country'})
 
     return deaths_line_country, cumulative_deaths_line_country

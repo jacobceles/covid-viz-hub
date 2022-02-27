@@ -12,11 +12,13 @@ from backend.functions import read_from_sql
 """ Import data """
 # Read data from SQL
 deaths_us_df = read_from_sql('test', 'deaths_us')
+available_states = deaths_us_df['state'].unique()
+deaths_us_states_df = deaths_us_df.groupby(['state', 'time_period', 'state_code'], as_index=False).sum()
 deaths_us_normalized_df = read_from_sql('test', 'deaths_us_normalized')
-# deaths_us_ts_df = deaths_us_df.groupby('time_period', as_index=False).sum()
+deaths_us_ts_df = deaths_us_df.groupby('time_period', as_index=False).sum()
 
 """ Create graphs """
-deaths_choropleth = px.choropleth(deaths_us_df,
+deaths_choropleth = px.choropleth(deaths_us_states_df,
                                   locations='state_code',
                                   color="deaths",
                                   animation_frame="time_period",
@@ -24,18 +26,20 @@ deaths_choropleth = px.choropleth(deaths_us_df,
                                   locationmode='USA-states',
                                   hover_name="state",
                                   scope="usa",
-                                  range_color=(0, 1000000),
-                                  labels={'state_code': 'State', 'deaths': 'Death Count', 'time_period': 'Month'},
+                                  labels={'state_code': 'State Code', 'deaths': 'Death Count', 'time_period': 'Month'},
                                   height=600)
-
-deaths_us_bar = px.bar(deaths_us_normalized_df, x="death_percent", y="state", orientation='h',
-                       labels={'state': 'State', 'death_percent': 'Percentage of deaths'})
-
-states = ['Connecticut', 'Louisiana', 'Massachusetts', 'Mississippi', 'New York', 'New Jersey', 'Rhode Island']
-deaths_us_sunburst = px.sunburst(deaths_us_df[deaths_us_df['state'].isin(states)],
-                                 path=['state', 'province'], values='deaths', height=600, template="plotly",
-                                 labels={'state': 'State', 'province': 'Provinces', 'deaths': 'Death Count'})
-
+cumulative_deaths_choropleth = px.choropleth(deaths_us_states_df,
+                                             locations='state_code',
+                                             color="cumulative_deaths",
+                                             animation_frame="time_period",
+                                             color_continuous_scale="orrd",
+                                             locationmode='USA-states',
+                                             hover_name="state",
+                                             scope="usa",
+                                             labels={'state_code': 'State Code',
+                                                     'cumulative_deaths': 'Cumulative Death Count',
+                                                     'time_period': 'Month'},
+                                             height=600)
 
 """" Layout"""
 layout = html.Div([
@@ -59,6 +63,12 @@ layout = html.Div([
                                           className="text-center text-light bg-dark"),
                                   body=True, color="dark"),
                          className="mt-4 mb-4")]),
+        dcc.Dropdown(id='covid_period', options=[
+                    {'label': 'First half of 2020', 'value': '2020,01,06'},
+                    {'label': 'Second half of 2020', 'value': '2020,07,12'},
+                    {'label': 'First half of 2021', 'value': '2021,01,06'},
+                    {'label': 'Second half of 2021', 'value': '2021,07,12'}],
+                     value='2021,07,12', style={'width': '65%', 'margin-left': '5px'}),
         dbc.Row([dbc.Col(html.H5(children='Daily COVID-19 cases in the USA', className="text-center"),
                          className="mt-4")]),
         dcc.Graph(id='graph_by_period', hoverData={'points': [{'x': '11-May'}]}),
@@ -69,8 +79,16 @@ layout = html.Div([
         dbc.Row([dbc.Col(html.H5(children='Progress of covid deaths across states in the USA', className="text-center"),
                          className="mt-4"), ]),
         dbc.Row([html.Div([dcc.Graph(figure=deaths_choropleth)])]),
-        dbc.Row([html.Div([dcc.Graph(figure=deaths_us_bar)])]),
-        dbc.Row([html.Div([dcc.Graph(figure=deaths_us_sunburst)])]),
+        dbc.Row([html.Div([dcc.Graph(figure=cumulative_deaths_choropleth)])]),
+
+        dbc.Row([dbc.Col(dbc.Card(html.H3(children='Comparison between states',
+                                          className="text-center text-light bg-dark"),
+                                  body=True, color="dark"), className="mb-4")]),
+        dcc.Dropdown(id='states', options=[{'label': i, 'value': i} for i in available_states],
+                     value=['Mississippi', 'Arizona', 'California', 'Kentucky'], multi=True,
+                     style={'width': '70%', 'margin-left': '5px', 'align': 'center'}),
+        dcc.Graph(id='deaths_us_states_bar'),
+        dcc.Graph(id='deaths_us_sunburst')
     ])
 ])
 
@@ -98,19 +116,24 @@ def update_columns(value):
 # can observe whether government measures are effective in reducing the number of cases.
 @app.callback(Output('graph_by_period', 'figure'),
               [Input('covid_period', 'value')])
-def update_graph(covid_period_name):
-    # dff = deaths_us_ts_df[deaths_us_ts_df.Period == covid_period_name]
-    # # not sure why this doesn't work, Daily Confirmed is an invalid key
-    # col = ['Daily Imported', 'Daily Local transmission']
-    # dff['total'] = dff[col].sum(axis=1)
-    # data = [go.Scatter(x=dff['Date'], y=dff['total'],
-    #                    mode='lines+markers',name='Daily confirmed')]
-    # layout = go.Layout(
-    #     yaxis={'title': "Cases"},
-    #     paper_bgcolor = 'rgba(0,0,0,0)',
-    #     plot_bgcolor = 'rgba(0,0,0,0)',
-    #     template = "seaborn",
-    #     margin=dict(t=20)
-    # )
-    # return {'data': data, 'layout': layout}
-    return None
+def update_graph(covid_period_dates):
+    year, month_start, month_end = covid_period_dates.split(",")
+    months_list = [(year+'-'+'{:02}').format(month) for month in range(int(month_start), int(month_end)+1)]
+    dfc = deaths_us_ts_df[deaths_us_ts_df['time_period'].isin(months_list)]
+    return px.line(dfc, x="time_period", y="deaths", markers=True, labels={'time_period': 'Month', 'deaths': 'Deaths'})
+
+
+# to allow comparison of cases or deaths among states
+@app.callback([Output('deaths_us_states_bar', 'figure'),
+               Output('deaths_us_sunburst', 'figure')],
+              [Input('states', 'value')])
+def update_graph(states_name):
+    dfc = deaths_us_normalized_df.copy()
+    dfc = dfc[dfc['state'].isin(states_name)]
+    deaths_us_states_bar = px.bar(dfc, x="state", y="death_percent",
+                                  labels={'state': 'State', 'death_percent': 'Percentage of deaths'})
+
+    deaths_us_sunburst = px.sunburst(deaths_us_df[deaths_us_df['state'].isin(states_name)],
+                                     path=['state', 'province'], values='deaths', height=600, template="plotly",
+                                     labels={'state': 'State', 'province': 'Provinces', 'deaths': 'Death Count'})
+    return deaths_us_states_bar, deaths_us_sunburst
