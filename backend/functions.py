@@ -1,4 +1,3 @@
-import psycopg2
 import pycountry
 import pandas as pd
 import pycountry_convert as pc
@@ -195,31 +194,33 @@ def get_country_continent(df):
     return df
 
 
-def write_to_sql(df, table_name):
+def write_to_sql(df, db_name, table_name):
     """
     :param df: Input dataframe
+    :param db_name: Database name
     :param table_name: Table name
     :return: A dataframe
     """
     df.reset_index(level=0, drop=True, inplace=True)
-    database_url=environ.get('DATABASE_URL').replace("postgres://","postgresql://")
-    sql_engine = create_engine(database_url, echo=False)
+    sql_engine = create_engine('mysql+pymysql://root:@127.0.0.1/{}'.format(db_name), pool_recycle=3600)
+    db_connection = sql_engine.connect()
     try:
-        df.to_sql(table_name, con=sql_engine, if_exists='replace')
+        df.to_sql(table_name, db_connection, if_exists='replace')
+        db_connection.close()
         return "Table {} created successfully.".format(table_name)
     except Exception as e:
         db_connection.close()
         return "An error occurred: {}".format(e)
 
 
-def read_from_sql(table_name):
+def read_from_sql(db_name, table_name):
     """
     :param db_name: Database name
     :param table_name: Table name
     :return: The table as a dataframe
     """
-    database_url=environ.get('DATABASE_URL').replace("postgres://","postgresql://")
-    con = psycopg2.connect(database_url)
-    cur = con.cursor()
-    df = pd.read_sql("select * from {}".format(table_name), con)
+    sql_engine = create_engine('mysql+pymysql://root:@127.0.0.1', pool_recycle=3600)
+    db_connection = sql_engine.connect()
+    df = pd.read_sql("select * from {}.{}".format(db_name, table_name), db_connection)
+    db_connection.close()
     return df
