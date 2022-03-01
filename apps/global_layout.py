@@ -11,7 +11,7 @@ from backend.functions import read_from_sql
 
 """ Import data """
 # Read data from SQL
-deaths_global_df = read_from_sql('test', 'deaths_global')
+deaths_global_df = read_from_sql('deaths_global')
 available_countries = deaths_global_df['country'].unique()
 latest_time_period = deaths_global_df['time_period'].max()
 latest_year = latest_time_period.split("-")[0]
