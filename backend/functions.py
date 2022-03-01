@@ -1,3 +1,4 @@
+import psycopg2
 import pycountry
 import pandas as pd
 import pycountry_convert as pc
@@ -201,11 +202,9 @@ def write_to_sql(df, db_name, table_name):
     :return: A dataframe
     """
     df.reset_index(level=0, drop=True, inplace=True)
-    sql_engine = create_engine('mysql+pymysql://root:@127.0.0.1/{}'.format(db_name), pool_recycle=3600)
-    db_connection = sql_engine.connect()
+    sql_engine = create_engine('postgres://lnladmjvsgvxku:ccf89df2f8ad039b605f1cc65ad38f93bcec677e4c207839df7b78450d623e80@ec2-50-19-32-96.compute-1.amazonaws.com:5432/dfngpa6ogaqi9j', echo=False)
     try:
-        df.to_sql(table_name, db_connection, if_exists='replace')
-        db_connection.close()
+        df.to_sql(table_name, con=sql_engine, if_exists='replace')
         return "Table {} created successfully.".format(table_name)
     except Exception as e:
         db_connection.close()
@@ -218,8 +217,7 @@ def read_from_sql(db_name, table_name):
     :param table_name: Table name
     :return: The table as a dataframe
     """
-    sql_engine = create_engine('mysql+pymysql://root:@127.0.0.1', pool_recycle=3600)
-    db_connection = sql_engine.connect()
-    df = pd.read_sql("select * from {}.{}".format(db_name, table_name), db_connection)
-    db_connection.close()
+    con = psycopg2.connect('postgres://lnladmjvsgvxku:ccf89df2f8ad039b605f1cc65ad38f93bcec677e4c207839df7b78450d623e80@ec2-50-19-32-96.compute-1.amazonaws.com:5432/dfngpa6ogaqi9j')
+    cur = con.cursor()
+    df = pd.read_sql("select * from {}.{}".format(db_name, table_name), con)
     return df
