@@ -202,7 +202,7 @@ def write_to_sql(df, table_name):
     :return: A dataframe
     """
     df.reset_index(level=0, drop=True, inplace=True)
-    database_url=environ.get('DATABASE_URL')
+    database_url=environ.get('DATABASE_URL').replace("postgres://","postgresql://")
     sql_engine = create_engine(database_url, echo=False)
     try:
         df.to_sql(table_name, con=sql_engine, if_exists='replace')
@@ -218,6 +218,7 @@ def read_from_sql(table_name):
     :param table_name: Table name
     :return: The table as a dataframe
     """
+    database_url=environ.get('DATABASE_URL').replace("postgres://","postgresql://")
     con = psycopg2.connect(database_url)
     cur = con.cursor()
     df = pd.read_sql("select * from {}".format(table_name), con)

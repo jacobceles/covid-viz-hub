@@ -41,7 +41,6 @@ def deaths_us(df):
     df = rename_date_columns(df, {'admin2', 'province_state', 'population'}, '_')
     df = convert_to_month_wise_df(df, {'admin2', 'province_state', 'population'}, '/')
     df = melt_columns_to_rows(df, ['admin2', 'province_state', 'population'], "time_period", "cumulative_deaths")
-    print(df[df['province_state'] == 'North Dakota'])
     df = unroll_cumulative_sum(df, ['admin2', 'province_state', 'cumulative_deaths'], ['admin2', 'province_state'])
     not_ok_states = ['American Samoa', 'Diamond Princess', 'Grand Princess', 'Guam', 'Puerto Rico',
                      'Northern Mariana Islands', 'Virgin Islands', 'District of Columbia']
