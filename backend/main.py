@@ -87,6 +87,6 @@ if __name__ == '__main__':
     deaths_us_states_normalized = deaths_us_normalized(deaths_us_df_latest)
 
     # Write to SQL
-    print(write_to_sql(deaths_us_df, 'deaths_us'))
-    print(write_to_sql(deaths_global_df, 'deaths_global'))
-    print(write_to_sql(deaths_us_states_normalized, 'deaths_us_normalized'))
+    # print(write_to_sql(deaths_us_df, 'test', 'deaths_us'))
+    # print(write_to_sql(deaths_global_df, 'test', 'deaths_global'))
+    # print(write_to_sql(deaths_us_states_normalized, 'test', 'deaths_us_normalized'))

@@ -3,7 +3,6 @@ import pycountry
 import pandas as pd
 import pycountry_convert as pc
 
-from os import environ
 from datetime import datetime
 from sqlalchemy import create_engine
 
@@ -195,15 +194,15 @@ def get_country_continent(df):
     return df
 
 
-def write_to_sql(df, table_name):
+def write_to_sql(df, db_name, table_name):
     """
     :param df: Input dataframe
+    :param db_name: Database name
     :param table_name: Table name
     :return: A dataframe
     """
     df.reset_index(level=0, drop=True, inplace=True)
-    database_url=environ.get('DATABASE_URL')
-    sql_engine = create_engine(database_url, echo=False)
+    sql_engine = create_engine('postgres://lnladmjvsgvxku:ccf89df2f8ad039b605f1cc65ad38f93bcec677e4c207839df7b78450d623e80@ec2-50-19-32-96.compute-1.amazonaws.com:5432/dfngpa6ogaqi9j', echo=False)
     try:
         df.to_sql(table_name, con=sql_engine, if_exists='replace')
         return "Table {} created successfully.".format(table_name)
@@ -212,13 +211,13 @@ def write_to_sql(df, table_name):
         return "An error occurred: {}".format(e)
 
 
-def read_from_sql(table_name):
+def read_from_sql(db_name, table_name):
     """
     :param db_name: Database name
     :param table_name: Table name
     :return: The table as a dataframe
     """
-    con = psycopg2.connect(database_url)
+    con = psycopg2.connect('postgres://lnladmjvsgvxku:ccf89df2f8ad039b605f1cc65ad38f93bcec677e4c207839df7b78450d623e80@ec2-50-19-32-96.compute-1.amazonaws.com:5432/dfngpa6ogaqi9j')
     cur = con.cursor()
-    df = pd.read_sql("select * from {}".format(table_name), con)
+    df = pd.read_sql("select * from {}.{}".format(db_name, table_name), con)
     return df
