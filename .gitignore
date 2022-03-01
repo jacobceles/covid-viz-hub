@@ -1,8 +1,10 @@
 __pycache__
 *.py[cod]
 *$py.class
+*.pyc
 
 # Distribution / packaging 
+.DS_Store
 .Python build/ 
 develop-eggs/ 
 dist/ 
