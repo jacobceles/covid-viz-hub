@@ -28,6 +28,24 @@ def pivot_date_columns(df, ok_columns, value_name):
     """
     return df.melt(id_vars=ok_columns, var_name="time_period", value_name=value_name)
 
+def get_cumulative_confirmed(df, level_list):
+    """
+    :param df: Input dataframe
+    :param level_list: List of columns on which the cumulative deaths are to be calculated
+    :return: A dataframe
+    """
+    df['cumulative_confirmed'] = df.groupby(level_list)['confirmed'].cumsum()
+    return df
+
+def get_cumulative_cases(df, level_list):
+    """
+    :param df: Input dataframe
+    :param level_list: List of columns on which the cumulative deaths are to be calculated
+    :return: A dataframe
+    """
+    df['cumulative_confirmed'] = df.groupby(level_list)['confirmed'].cumsum()
+    return df
+
 
 def get_cumulative_deaths(df, level_list):
     """
