@@ -81,8 +81,12 @@ def deaths_us_normalized(df):
 
 if __name__ == '__main__':
     # JHU data
-    deaths_global_df = death_globals(pd.read_csv("data/deaths_global.csv"))
-    deaths_us_df = deaths_us(pd.read_csv("data/deaths_us.csv"))
+    deaths_global_source = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" \
+                    "csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+    deaths_us_source = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" \
+                       "csse_covid_19_time_series/time_series_covid19_deaths_US.csv"
+    deaths_global_df = death_globals(pd.read_csv(deaths_global_source))
+    deaths_us_df = deaths_us(pd.read_csv(deaths_us_source))
     deaths_us_df_latest = deaths_us_df[deaths_us_df['time_period'] == deaths_us_df['time_period'].max()]
     deaths_us_states_normalized = deaths_us_normalized(deaths_us_df_latest)
 

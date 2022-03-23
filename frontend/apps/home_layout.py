@@ -32,12 +32,14 @@ layout = html.Div([
                                                                    href="https://data.cdc.gov/Case-Surveillance/"
                                                                         "COVID-19-Case-Surveillance-Public-Use-Data-"
                                                                         "with-Ge/n8mc-b4w4",
+                                                                   target="_blank",
                                                                    color="primary", className="mt-3"),
                                                         className="mx-auto"),
                                                 dbc.Col(dbc.Button("JHU Data",
                                                                    href="https://github.com/CSSEGISandData/COVID-19/"
                                                                         "tree/master/csse_covid_19_data/"
                                                                         "csse_covid_19_time_series",
+                                                                   target="_blank",
                                                                    color="primary", className="mt-3"),
                                                         className="mx-auto")],
                                                justify="center")],
@@ -46,12 +48,12 @@ layout = html.Div([
             dbc.Col(dbc.Card(children=[html.H3(children='Access the code used to build this dashboard',
                                                className="text-center"),
                                        dbc.Button("GitHub", href="https://github.com/jacobceles/covid-viz-hub",
-                                                  color="primary", className="mt-3"), ],
+                                                  target="_blank", color="primary", className="mt-3"), ],
                              body=True, color="dark", outline=True), width=4, className="mb-4 text-center"),
             dbc.Col(dbc.Card(children=[html.H3(children='Read about the architecture used for this dashboard',
                                                className="text-center"),
                                        dbc.Button("Architecture", href="https://data.cdc.gov/browse?tags=covid-19",
-                                                  color="primary", className="mt-3"), ],
+                                                  target="_blank", color="primary", className="mt-3"), ],
                              body=True, color="dark", outline=True), width=4, className="mb-4 text-center")
         ], className="mb-5"),
     ])
