@@ -41,7 +41,6 @@ def deaths_us(df):
     df = rename_date_columns(df, {'admin2', 'province_state', 'population'}, '_')
     df = convert_to_month_wise_df(df, {'admin2', 'province_state', 'population'}, '/')
     df = melt_columns_to_rows(df, ['admin2', 'province_state', 'population'], "time_period", "cumulative_deaths")
-    print(df[df['province_state'] == 'North Dakota'])
     df = unroll_cumulative_sum(df, ['admin2', 'province_state', 'cumulative_deaths'], ['admin2', 'province_state'])
     not_ok_states = ['American Samoa', 'Diamond Princess', 'Grand Princess', 'Guam', 'Puerto Rico',
                      'Northern Mariana Islands', 'Virgin Islands', 'District of Columbia']
@@ -81,12 +80,21 @@ def deaths_us_normalized(df):
 
 
 if __name__ == '__main__':
+    # JHU data
     deaths_global_df = death_globals(pd.read_csv("data/deaths_global.csv"))
     deaths_us_df = deaths_us(pd.read_csv("data/deaths_us.csv"))
     deaths_us_df_latest = deaths_us_df[deaths_us_df['time_period'] == deaths_us_df['time_period'].max()]
     deaths_us_states_normalized = deaths_us_normalized(deaths_us_df_latest)
 
+    # CDC data
+    missing_values = ["NaN", "Missing", "Unknown", "NA", "nul", "null"]
+    fields = ['age_group', 'sex', 'race', 'underlying_conditions_yn',
+              'res_state', 'death_yn', 'hosp_yn', 'icu_yn', 'case_month']
+    cdc_df = pd.read_csv('data/cdc_out.csv', skipinitialspace=True, usecols=fields,
+                         na_values=missing_values, low_memory=False).dropna()
+
     # Write to SQL
-    # print(write_to_sql(deaths_us_df, 'test', 'deaths_us'))
-    # print(write_to_sql(deaths_global_df, 'test', 'deaths_global'))
-    # print(write_to_sql(deaths_us_states_normalized, 'test', 'deaths_us_normalized'))
+    print(write_to_sql(deaths_us_df, 'covid_viz_hub', 'deaths_us'))
+    print(write_to_sql(deaths_global_df, 'covid_viz_hub', 'deaths_global'))
+    print(write_to_sql(deaths_us_states_normalized, 'covid_viz_hub', 'deaths_us_normalized'))
+    print(write_to_sql(cdc_df, 'covid_viz_hub', 'cdc_out'))

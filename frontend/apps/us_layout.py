@@ -11,10 +11,10 @@ from backend.functions import read_from_sql
 
 """ Import data """
 # Read data from SQL
-deaths_us_df = read_from_sql('test', 'deaths_us')
+deaths_us_df = read_from_sql('covid_viz_hub', 'deaths_us')
 available_states = deaths_us_df['state'].unique()
 deaths_us_states_df = deaths_us_df.groupby(['state', 'time_period', 'state_code'], as_index=False).sum()
-deaths_us_normalized_df = read_from_sql('test', 'deaths_us_normalized')
+deaths_us_normalized_df = read_from_sql('covid_viz_hub', 'deaths_us_normalized')
 deaths_us_ts_df = deaths_us_df.groupby('time_period', as_index=False).sum()
 
 """ Create graphs """
