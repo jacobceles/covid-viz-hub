@@ -1,5 +1,35 @@
 from functions import *
 
+def recovered_globals(df):
+    df = convert_columns_to_lowercase(df)
+    df = replace_character_in_column_names(df, "/", "_")
+    df = delete_columns(df, ['province_state', 'lat', 'long'])
+    df = rename_date_columns(df, {'country_region'}, '_')
+    df = convert_to_month_wise_df(df, {'country_region'}, '/')
+    df = melt_columns_to_rows(df, ['country_region'], "time_period", "cumulative_recovered")
+    df = df.groupby(['country_region', 'time_period'], as_index=False).sum()
+    df = unroll_cumulative_sum(df, ['country_region', 'cumulative_recovered'], ['country_region'])
+    df.columns = ['country', 'time_period', 'cumulative_recovered', 'recovered']
+    df = remove_unfit_countries(df, ['Kosovo', 'Diamond Princess', 'MS Zaandam', 'Estonia',
+                                     'Kyrgyzstan', 'Monaco', 'Sao Tome and Principe', 'Venezuela'])
+    countries_mapper = {'Congo (Kinshasa)': 'Congo', 'West Bank and Gaza': 'Israel', 'Congo (Brazzaville)': 'Congo',
+                        'Holy See': 'Holy See (Vatican City State)', 'Korea, South': 'Korea, Republic of',
+                        'Summer Olympics 2020': 'Japan', 'Burma': 'Myanmar', 'US': 'United States',
+                        'Winter Olympics 2022': 'China', 'Taiwan*': 'Taiwan, Province of China',
+                        "Cote d'Ivoire": "Côte d'Ivoire", 'Moldova': 'Moldova, Republic of',
+                        'Syria': 'Syrian Arab Republic', 'Venezuela': 'Venezuela, Bolivarian Republic of',
+                        'Iran': 'Iran, Islamic Republic of', 'Russia': 'Russian Federation',
+                        'Micronesia': 'Micronesia, Federated States of', 'Bolivia': 'Bolivia, Plurinational State of',
+                        'Laos': "Lao People's Democratic Republic", 'Brunei': 'Brunei Darussalam',
+                        'Vietnam': 'Viet Nam', 'Tanzania': 'Tanzania, United Republic of'}
+    df = clean_country_names(df, countries_mapper)
+    df = get_country_iso_code_2(df)
+    df = get_country_iso_code_3(df)
+    df = get_country_continent(df)
+    df['recovered'].clip(lower=0, inplace=True)
+    df.reset_index(level=0, inplace=True, drop=True)
+    return df
+
 
 def death_globals(df):
     # Deaths Global - deaths_global_df
@@ -85,6 +115,8 @@ if __name__ == '__main__':
                     "csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
     deaths_us_source = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" \
                        "csse_covid_19_time_series/time_series_covid19_deaths_US.csv"
+    recovered_global_source= "data/recovered_global.csv"
+    recovered_global_df=recovered_globals(pd.read_csv(recovered_global_source))
     deaths_global_df = death_globals(pd.read_csv(deaths_global_source))
     deaths_us_df = deaths_us(pd.read_csv(deaths_us_source))
     deaths_us_df_latest = deaths_us_df[deaths_us_df['time_period'] == deaths_us_df['time_period'].max()]
@@ -100,5 +132,6 @@ if __name__ == '__main__':
     # Write to SQL
     print(write_to_sql(deaths_us_df, 'covid_viz_hub', 'deaths_us'))
     print(write_to_sql(deaths_global_df, 'covid_viz_hub', 'deaths_global'))
+    print(write_to_sql(recovered_global_df, 'covid_viz_hub', 'recovered_global'))
     print(write_to_sql(deaths_us_states_normalized, 'covid_viz_hub', 'deaths_us_normalized'))
     print(write_to_sql(cdc_df, 'covid_viz_hub', 'cdc_out'))

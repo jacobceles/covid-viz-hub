@@ -2,7 +2,7 @@ import calendar
 import plotly.express as px
 import dash_bootstrap_components as dbc
 
-from app import app
+from frontend import app
 from dash import dcc
 from dash import html
 from dash import dash_table
@@ -12,11 +12,17 @@ from backend.functions import read_from_sql
 """ Import data """
 # Read data from SQL
 deaths_global_df = read_from_sql('covid_viz_hub', 'deaths_global')
+recovered_global_df = read_from_sql('covid_viz_hub', 'recovered_global')
+latest_time_period_recovered = recovered_global_df['time_period'].max()
 available_countries = deaths_global_df['country'].unique()
 latest_time_period = deaths_global_df['time_period'].max()
 latest_year = latest_time_period.split("-")[0]
 latest_month = calendar.month_name[int(latest_time_period.split("-")[1])]
 deaths_global_latest_df = deaths_global_df[deaths_global_df['time_period'] == latest_time_period]\
+    .groupby('continent', as_index=False).sum()
+print(recovered_global_df["recovered"])
+print("hi",latest_time_period_recovered)
+recovered_global_latest_df = recovered_global_df[recovered_global_df['time_period'] == latest_time_period_recovered]\
     .groupby('continent', as_index=False).sum()
 
 """ Create graphs """
@@ -36,6 +42,7 @@ deaths_choropleth = px.choropleth(deaths_global_df,
 
 cumulative_deaths_pie = px.pie(deaths_global_latest_df, values='cumulative_deaths', names='continent',
                                labels={'continent': 'Continent', 'cumulative_deaths': 'Cumulative Death Count'})
+cumulative_deaths_pie.show()
 cumulative_deaths_line = px.line(deaths_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
                                  x="time_period", y="cumulative_deaths", color="continent", markers=True,
                                  labels={'time_period': 'Month', 'cumulative_deaths': 'Cumulative Death Count',
@@ -48,6 +55,38 @@ cumulative_deaths_choropleth = px.choropleth(deaths_global_df,
                                              color_continuous_scale='amp',
                                              labels={'time_period': 'Month', 'iso_alpha_3': 'ISO Code',
                                                      'cumulative_deaths': 'Cumulative Death Count'},
+                                             height=600)
+print(recovered_global_latest_df)
+recovered_pie = px.pie(recovered_global_latest_df, values='recovered', names='continent',
+                    labels={'continent': 'Continent', 'recovered': 'Recovered Count'})
+recovered_pie.show()
+recovered_line = px.line(recovered_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
+                      x="time_period", y="recovered", color="continent", markers=True,
+                      labels={'time_period': 'Month', 'recovered': 'Recovered Count', 'continent': 'Continent'})
+recovered_choropleth = px.choropleth(recovered_global_df,
+                                  locations="iso_alpha_3",
+                                  color="recovered",
+                                  hover_name="country",
+                                  animation_frame="time_period",
+                                  color_continuous_scale='agsunset',
+                                  labels={'time_period': 'Month', 'recovered': 'Recovered Count', 'iso_alpha_3': 'ISO Code'},
+                                  height=600)
+
+cumulative_recovered_pie = px.pie(recovered_global_latest_df, values='cumulative_recovered', names='continent',
+                               labels={'continent': 'Continent', 'cumulative_recovered': 'Cumulative Recovered Count'})
+cumulative_recovered_pie.show()
+cumulative_recovered_line = px.line(recovered_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
+                                 x="time_period", y="cumulative_recovered", color="continent", markers=True,
+                                 labels={'time_period': 'Month', 'cumulative_recovered': 'Cumulative recovered Count',
+                                         'continent': 'Continent'})
+cumulative_recovered_choropleth = px.choropleth(recovered_global_df,
+                                             locations="iso_alpha_3",
+                                             color="cumulative_recovered",
+                                             hover_name="country",
+                                             animation_frame="time_period",
+                                             color_continuous_scale='amp',
+                                             labels={'time_period': 'Month', 'iso_alpha_3': 'ISO Code',
+                                                     'cumulative_recovered': 'Cumulative Recovered Count'},
                                              height=600)
 
 layout = html.Div([
@@ -85,6 +124,14 @@ layout = html.Div([
         dbc.Row([dbc.Col(html.Div([dcc.Graph(figure=cumulative_deaths_pie)])),
                  dbc.Col(html.Div([dcc.Graph(figure=cumulative_deaths_line)]))]),
         dbc.Row([html.Div([dcc.Graph(figure=cumulative_deaths_choropleth)])]),
+
+        dbc.Row([dbc.Col(dbc.Card(html.H3(children='Cumulative Recovery Figures by Continent',
+                                          className="text-center text-light bg-dark"),
+                                  body=True, color="dark"),
+                         className="mt-4 mb-4")]),
+        dbc.Row([dbc.Col(html.Div([dcc.Graph(figure=cumulative_recovered_pie)])),
+                 dbc.Col(html.Div([dcc.Graph(figure=cumulative_recovered_line)]))]),
+        dbc.Row([html.Div([dcc.Graph(figure=cumulative_recovered_choropleth)])]),
 
         dbc.Row([dbc.Col(dbc.Card(html.H3(children='Figures by country', className="text-center text-light bg-dark"),
                                   body=True, color="dark"),

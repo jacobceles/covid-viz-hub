@@ -7,7 +7,7 @@ from dash import html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from app import app
-from apps import home_layout, architecture_layout, global_layout, us_layout, individual_layout
+from apps import home_layout, architecture_layout, global_layout,us_layout, individual_layout
 # from app import server # must add this line in order for the app to be deployed successfully on Heroku
 
 # Building the navigation bar

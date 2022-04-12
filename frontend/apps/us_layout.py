@@ -17,6 +17,11 @@ deaths_us_states_df = deaths_us_df.groupby(['state', 'time_period', 'state_code'
 deaths_us_normalized_df = read_from_sql('covid_viz_hub', 'deaths_us_normalized')
 deaths_us_ts_df = deaths_us_df.groupby('time_period', as_index=False).sum()
 
+confirmed_us_states_normalized = read_from_sql('covid_viz_hub', 'confirmed_us_normalized')
+confirmed_us_states = read_from_sql('covid_viz_hub', 'confirmed_us')
+confirmed_us_states = confirmed_us_states.groupby(['province_state', 'time_period', 'state_code'], as_index=False).sum()
+#print(confirmed_us_states['cumulative_confirmed'].unique())
+
 """ Create graphs """
 deaths_choropleth = px.choropleth(deaths_us_states_df,
                                   locations='state_code',
@@ -40,6 +45,26 @@ cumulative_deaths_choropleth = px.choropleth(deaths_us_states_df,
                                                      'cumulative_deaths': 'Cumulative Death Count',
                                                      'time_period': 'Month'},
                                              height=600)
+
+confirmed_choropleth = px.choropleth(confirmed_us_states,
+                                  locations='state_code',
+                                  color="cumulative_confirmed",
+                                  animation_frame="time_period",
+                                  color_continuous_scale="orrd",
+                                  locationmode='USA-states',
+                                  hover_name="province_state",
+                                  scope="usa",
+                                  labels={'province_state': 'State', 'cumulative_confirmed': 'confirmed Count', 'time_period': 'Month'},
+                                  height=600)
+#confirmed_choropleth.show()
+confirmed_us_bar = px.bar(confirmed_us_states_normalized, x="confirmed_percent", y="province_state", orientation='h',
+                        labels={'province_state': 'State', 'confirm_percent': 'Percentage of confirm'})
+
+states = ['Connecticut', 'Louisiana', 'Massachusetts', 'Mississippi', 'New York', 'New Jersey', 'Rhode Island']
+confirmed_us_sunburst = px.sunburst(confirmed_us_states[confirmed_us_states['province_state'].isin(states)],
+                                 path=['province_state', 'cumulative_confirmed'], values='cumulative_confirmed', height=600, template="plotly",
+                                 labels={'province_state': 'State', 'admin2': 'Provinces', 'cumulative_confirmed': 'Confirm Count'})
+
 
 """" Layout"""
 layout = html.Div([
@@ -76,6 +101,10 @@ layout = html.Div([
         dbc.Row([dbc.Col(dbc.Card(html.H3(children='Figures by states', className="text-center text-light bg-dark"),
                                   body=True, color="dark"),
                          className="mb-4")]),
+        dbc.Row([dbc.Col(html.H5(children='Progress of confirmed cases across states in the USA', className="text-center"),
+                         className="mt-4"), ]),
+        dbc.Row([html.Div([dcc.Graph(figure=confirmed_choropleth)])]),
+
         dbc.Row([dbc.Col(html.H5(children='Progress of covid deaths across states in the USA', className="text-center"),
                          className="mt-4"), ]),
         dbc.Row([html.Div([dcc.Graph(figure=deaths_choropleth)])]),
@@ -89,6 +118,7 @@ layout = html.Div([
                      style={'width': '70%', 'margin-left': '5px', 'align': 'center'}),
         dcc.Graph(id='deaths_us_states_bar'),
         dcc.Graph(id='deaths_us_sunburst')
+
     ])
 ])
 
