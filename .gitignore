@@ -1,6 +1,9 @@
 __pycache__
 *.py[cod]
 *$py.class
+backend/confirmed.py
+frontend/iframe_figures/
+backend/global_confirmed.py
 
 # Distribution / packaging 
 .Python build/ 
@@ -65,7 +68,13 @@ env/
 venv/
 ENV/
 
-# PyCharm 
+
+# PyCharm
+.idea/misc.xml
+.idea/covid-viz-hub-latest.iml
+.idea/vcs.xml
+.idea/modules.xml
+.idea/inspectionProfiles/profiles_settings.xml
 .idea/**/workspace.xml 
 .idea/**/tasks.xml 
 .idea/dictionaries 
