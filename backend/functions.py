@@ -238,3 +238,11 @@ def read_from_sql(db_name, table_name):
     df = pd.read_sql("select * from {}.{}".format(db_name, table_name), db_connection)
     db_connection.close()
     return df
+
+def racing_bar(df):
+    covid = df[["time_period", "country", "Confirmed", "continent", "cumulative_confirmed"]]
+    grouped = covid.groupby(['country', 'time_period'])
+    covid_confirmed = grouped.sum().reset_index().sort_values(['time_period'], ascending=False)
+    df = (covid_confirmed[covid_confirmed['Date'].eq("05/01/2021")].sort_values(by="Confirmed", ascending=False).head(10))
+    return df
+
