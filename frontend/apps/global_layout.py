@@ -33,6 +33,9 @@ confirmed_global_latest_df = confirmed_global_df[confirmed_global_df['time_perio
     .groupby('continent', as_index=False).sum()
 
 """ racing bar"""
+df=confirmed_global_df.groupby(['country', 'time_period']).sum().reset_index()
+confirmed_global_raceplot = barplot(df, item_column='country',
+                                        value_column='cumulative_confirmed', time_column='time_period')
 
 """ Create graphs """
 deaths_pie = px.pie(deaths_global_latest_df, values='deaths', names='continent',
@@ -195,7 +198,8 @@ layout = html.Div([
                      value=['United States', 'India'], multi=True,
                      style={'width': '70%', 'margin-left': '5px', 'align': 'center'}),
         dbc.Row([dbc.Col(html.H5(children='Monthly figures', className="text-center"), className="mt-4"), ]),
-        dbc.Row([html.Div([dcc.Graph(id='race_bar')])]),
+        dbc.Row([html.Div([dcc.Graph(figure=confirmed_global_raceplot.plot(item_label='Selected Top 10 Countries with Covid-19',
+                                             value_label='cumulative_confirmed', frame_duration=600))])]),
         # dbc.Row([html.Div([dcc.Graph(id='race_bar'(item_label='Selected Countries with Covid Cases',
         #                                     value_label='cumulative_confirmed', frame_duration=600))])]),
         dcc.RadioItems(id='chart_type', options=[{'label': i, 'value': i} for i in ['Confirmed Cases', 'Death Cases']],
@@ -272,18 +276,18 @@ def update_graph(countries_name, value):
                                                      'country': 'Country'})
 
     return status_line_country, cumulative_status_line_country
-
-@app.callback([Output('race_bar', 'figure')],
-              [Input('countries', 'value')])
-def update_graph(countries_name):
-    df = confirmed_global_df.copy()
-    dfc = df[df['country'].isin(countries_name)]
-    dfc=dfc.groupby(['country', 'time_period']).sum().reset_index()
-    confirmed_global_raceplot = barplot(dfc, item_column='country',
-                                        value_column='cumulative_confirmed', time_column='time_period')
-    # figure = confirmed_global_raceplot.plot(item_label='Selected Countries with Covid Cases',
-    #                                         value_label='cumulative_confirmed', frame_duration=600)
-
-
-    return confirmed_global_raceplot.plot(item_label='Selected Countries with Covid Cases',
-                                             value_label='cumulative_confirmed', frame_duration=600)
+#
+# @app.callback([Output('race_bar', 'figure')],
+#               [Input('countries', 'value')])
+# def update_graph(countries_name):
+#     df = confirmed_global_df.copy()
+#     dfc = df[df['country'].isin(countries_name)]
+#     df=confirmed_global_df.groupby(['country', 'time_period']).sum().reset_index()
+#     confirmed_global_raceplot = barplot(df, item_column='country',
+#                                         value_column='cumulative_confirmed', time_column='time_period')
+#     # figure = confirmed_global_raceplot.plot(item_label='Selected Countries with Covid Cases',
+#     #                                         value_label='cumulative_confirmed', frame_duration=600)
+#
+#
+#     return confirmed_global_raceplot.plot(item_label='Selected Countries with Covid Cases',
+#                                              value_label='cumulative_confirmed', frame_duration=600)

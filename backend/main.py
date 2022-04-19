@@ -11,6 +11,7 @@ def recovered_globals(df):
     df = df.groupby(['country_region', 'time_period'], as_index=False).sum()
     df = unroll_cumulative_sum(df, ['country_region', 'cumulative_recovered'], ['country_region'])
     df.columns = ['country', 'time_period', 'cumulative_recovered', 'recovered']
+    df['time_period'] = df['time_period'] <= '2021-08'
     df = remove_unfit_countries(df, ['Kosovo', 'Diamond Princess', 'MS Zaandam', 'Estonia',
                                      'Kyrgyzstan', 'Monaco', 'Sao Tome and Principe', 'Venezuela'])
     countries_mapper = {'Congo (Kinshasa)': 'Congo', 'West Bank and Gaza': 'Israel', 'Congo (Brazzaville)': 'Congo',
@@ -176,7 +177,7 @@ def confirmed_us(df):
 
 def confirmed_us_normalized(df):
     # Create new normalized dataframe for states
-    confirmed_us_states = confirmed_us_df.groupby('province_state', as_index=False)['cumulative_confirmed'].sum()
+    confirmed_us_states = df.groupby('province_state', as_index=False)['cumulative_confirmed'].sum()
     population_us_states = confirmed_us_df[confirmed_us_df['time_period'] == confirmed_us_df['time_period'].max()] \
         [['province_state', 'population']].groupby('province_state', as_index=False).sum()
     confirmed_us_states.set_index(['province_state'], inplace=True)
