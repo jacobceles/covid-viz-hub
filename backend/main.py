@@ -172,20 +172,18 @@ def confirmed_us(df):
                      'Texas': 'TX', 'Utah': 'UT', 'Virginia': 'VA', 'Vermont': 'VT', 'Washington': 'WA',
                      'Wisconsin': 'WI', 'West Virginia': 'WV', 'Wyoming': 'WY'}
     df = clean_state_names(confirmed_us_df, states_mapper)
-    confirmed_us_df_latest = df[df['time_period'] == df['time_period'].max()]
-    print("hi",confirmed_us_df_latest.columns)
-    return confirmed_us_df_latest
+    #confirmed_us_df_latest = df[df['time_period'] == df['time_period'].max()]
+    #print("hi",confirmed_us_df_latest.columns)
+    return df
 
 def confirmed_us_normalized(df):
     # Create new normalized dataframe for states
-    print(df.columns)
-    confirmed_us_states = df.groupby('province_state', as_index=False)['cumulative_confirmed'].sum()
-    print(confirmed_us_states.head())
-    population_us_states=df.groupby('province_state', as_index=False)['population'].sum()
-    # population_us_states = confirmed_us_states[confirmed_us_states['time_period'] == confirmed_us_states['time_period'].max()] \
-    #     [['province_state', 'population']].groupby('province_state', as_index=False).sum()
-    confirmed_us_states.set_index(['province_state'], inplace=True)
-    population_us_states.set_index(['province_state'], inplace=True)
+    confirmed_us_states = df.groupby(['province_state','time_period'], as_index=False)['cumulative_confirmed'].sum()
+    population_us_states=df.groupby(['province_state','time_period'], as_index=False)['population'].sum()
+    # population_us_states = df[df['time_period'] == df['time_period'].max()] \
+    #      [['province_state', 'population']].groupby('province_state', as_index=False).sum()
+    confirmed_us_states.set_index(['province_state','time_period'], inplace=True)
+    population_us_states.set_index(['province_state','time_period'], inplace=True)
     confirmed_us_states_normalized = confirmed_us_states.join(population_us_states).reset_index()
     confirmed_us_states_normalized = confirmed_us_states_normalized.loc[:,
                                      ~confirmed_us_states_normalized.columns.duplicated()]
@@ -196,7 +194,6 @@ def confirmed_us_normalized(df):
     population_us_states.reset_index(level=0, inplace=True, drop=True)
     confirmed_us_states_normalized['confirmed_percent'] = confirmed_us_states_normalized['cumulative_confirmed'] / \
                                                           confirmed_us_states_normalized['population']
-    print(confirmed_us_states_normalized)
     return confirmed_us_states_normalized
 
 
@@ -241,12 +238,12 @@ if __name__ == '__main__':
     cdc_df = pd.read_csv('data/cdc_out.csv', skipinitialspace=True, usecols=fields,
                          na_values=missing_values, low_memory=False).dropna()
 
-    # Write to SQL
-    # print(write_to_sql(deaths_us_df, 'covid_viz_hub', 'deaths_us'))
-    # print(write_to_sql(deaths_global_df, 'covid_viz_hub', 'deaths_global'))
-    # print(write_to_sql(recovered_global_df, 'covid_viz_hub', 'recovered_global'))
-    # print(write_to_sql(confirmed_global_df, 'covid_viz_hub', 'confirmed_global'))
-    # print(write_to_sql(deaths_us_states_normalized, 'covid_viz_hub', 'deaths_us_normalized'))
-    # print(write_to_sql(cdc_df, 'covid_viz_hub', 'cdc_out'))
-    # print(write_to_sql(confirmed_us_df, 'covid_viz_hub', 'confirmed_us'))
-    # print(write_to_sql(confirmed_us_states_normalized, 'covid_viz_hub', 'confirmed_us_normalized'))
+    #Write to SQL
+    print(write_to_sql(deaths_us_df, 'covid_viz_hub', 'deaths_us'))
+    print(write_to_sql(deaths_global_df, 'covid_viz_hub', 'deaths_global'))
+    print(write_to_sql(recovered_global_df, 'covid_viz_hub', 'recovered_global'))
+    print(write_to_sql(confirmed_global_df, 'covid_viz_hub', 'confirmed_global'))
+    print(write_to_sql(deaths_us_states_normalized, 'covid_viz_hub', 'deaths_us_normalized'))
+    print(write_to_sql(cdc_df, 'covid_viz_hub', 'cdc_out'))
+    print(write_to_sql(confirmed_us_df, 'covid_viz_hub', 'confirmed_us'))
+    print(write_to_sql(confirmed_us_states_normalized, 'covid_viz_hub', 'confirmed_us_normalized'))

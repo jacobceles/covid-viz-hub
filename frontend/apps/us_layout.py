@@ -20,8 +20,9 @@ deaths_us_ts_df = deaths_us_df.groupby('time_period', as_index=False).sum()
 confirmed_us_states_normalized = read_from_sql('covid_viz_hub', 'confirmed_us_normalized')
 confirmed_us_states = read_from_sql('covid_viz_hub', 'confirmed_us')
 confirmed_us_states = confirmed_us_states.groupby(['province_state', 'time_period', 'state_code'], as_index=False).sum()
-#print(confirmed_us_states['cumulative_confirmed'].unique())
-
+# print(confirmed_us_states)
+# print(confirmed_us_states_normalized )
+# print(deaths_us_states_df)
 """ Create graphs """
 deaths_choropleth = px.choropleth(deaths_us_states_df,
                                   locations='state_code',
