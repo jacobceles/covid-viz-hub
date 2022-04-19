@@ -172,7 +172,8 @@ def confirmed_us(df):
                      'Texas': 'TX', 'Utah': 'UT', 'Virginia': 'VA', 'Vermont': 'VT', 'Washington': 'WA',
                      'Wisconsin': 'WI', 'West Virginia': 'WV', 'Wyoming': 'WY'}
     df = clean_state_names(confirmed_us_df, states_mapper)
-    return df
+    confirmed_us_df_latest = confirmed_us_df[confirmed_us_df['time_period'] == confirmed_us_df['time_period'].max()]
+    return confirmed_us_df_latest
 
 
 def confirmed_us_normalized(df):
@@ -215,19 +216,19 @@ if __name__ == '__main__':
     deaths_us_states_normalized = deaths_us_normalized(deaths_us_df_latest)
 
     #merging population column from death_us_df to confirmed_us_df
-    deaths_us_df_rd=pd.read_csv(deaths_us_source)
-    deaths_us_df_rd.columns = map(str.lower, deaths_us_df_rd.columns)
-    confirmed_us_df_rd=pd.read_csv(confirmed_us_source)
-    confirmed_us_df_rd.columns = map(str.lower, confirmed_us_df_rd.columns)
-    population_us_df_rd = deaths_us_df_rd.filter(
-        ['population', 'province_state', 'country_region', 'lat', 'long_', 'admin2', 'uid'], axis=1)
-
-    confirmed_us_df = pd.merge(confirmed_us_df_rd, population_us_df_rd,
+    def extract_and_marge(deaths_us_source,confirmed_us_source ):
+        deaths_us_df_rd=pd.read_csv(deaths_us_source)
+        deaths_us_df_rd.columns = map(str.lower, deaths_us_df_rd.columns)
+        confirmed_us_df_rd=pd.read_csv(confirmed_us_source)
+        confirmed_us_df_rd.columns = map(str.lower, confirmed_us_df_rd.columns)
+        population_us_df_rd = deaths_us_df_rd.filter(
+            ['population', 'province_state', 'country_region', 'lat', 'long_', 'admin2', 'uid'], axis=1)
+        confirmed_us_df = pd.merge(confirmed_us_df_rd, population_us_df_rd,
                                on=['province_state', 'country_region', 'lat', 'long_', 'admin2', 'uid'],
                                how='inner')
-    confirmed_us_df = confirmed_us(confirmed_us_df)
-    confirmed_us_df_latest = confirmed_us_df[confirmed_us_df['time_period'] == confirmed_us_df['time_period'].max()]
-    confirmed_us_states_normalized = confirmed_us_normalized(confirmed_us_df_latest)
+        return confirmed_us_df
+    confirmed_us_df = confirmed_us(extract_and_marge(deaths_us_source,confirmed_us_source))
+    confirmed_us_states_normalized = confirmed_us_normalized(confirmed_us_df)
 
     # CDC data
     missing_values = ["NaN", "Missing", "Unknown", "NA", "nul", "null"]
