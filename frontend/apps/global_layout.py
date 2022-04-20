@@ -17,6 +17,7 @@ from backend.functions import read_from_sql, racing_bar
 # Read data from SQL
 deaths_global_df = read_from_sql('covid_viz_hub', 'deaths_global')
 recovered_global_df = read_from_sql('covid_viz_hub', 'recovered_global')
+#print(recovered_global_df)
 confirmed_global_df = read_from_sql('covid_viz_hub', 'confirmed_global')
 latest_time_period_recovered = recovered_global_df['time_period'].max()
 available_countries = deaths_global_df['country'].unique()

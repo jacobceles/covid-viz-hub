@@ -9,9 +9,10 @@ def recovered_globals(df):
     df = convert_to_month_wise_df(df, {'country_region'}, '/')
     df = melt_columns_to_rows(df, ['country_region'], "time_period", "cumulative_recovered")
     df = df.groupby(['country_region', 'time_period'], as_index=False).sum()
+    #print(df)
     df = unroll_cumulative_sum(df, ['country_region', 'cumulative_recovered'], ['country_region'])
     df.columns = ['country', 'time_period', 'cumulative_recovered', 'recovered']
-    df['time_period'] = df['time_period'] <= '2021-08'
+    #df['time_period'] = df['time_period'] <= '2021-08'
     df = remove_unfit_countries(df, ['Kosovo', 'Diamond Princess', 'MS Zaandam', 'Estonia',
                                      'Kyrgyzstan', 'Monaco', 'Sao Tome and Principe', 'Venezuela'])
     countries_mapper = {'Congo (Kinshasa)': 'Congo', 'West Bank and Gaza': 'Israel', 'Congo (Brazzaville)': 'Congo',
@@ -30,6 +31,7 @@ def recovered_globals(df):
     df = get_country_continent(df)
     df['recovered'].clip(lower=0, inplace=True)
     df.reset_index(level=0, inplace=True, drop=True)
+    print(df)
     return df
 
 def confirmed_globals(df):
@@ -210,6 +212,7 @@ if __name__ == '__main__':
     confirmed_global_source="https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/" \
                             "csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
     recovered_global_df=recovered_globals(pd.read_csv(recovered_global_source))
+    #print(pd.read_csv(recovered_global_source))
     deaths_global_df = death_globals(pd.read_csv(deaths_global_source))
     confirmed_global_df=confirmed_globals(pd.read_csv(confirmed_global_source))
     deaths_us_df = deaths_us(pd.read_csv(deaths_us_source))
