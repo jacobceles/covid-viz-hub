@@ -6,6 +6,7 @@ from app import app
 from dash import dcc
 from dash import html
 from dash import dash_table
+from raceplotly.plots import barplot
 from dash.dependencies import Input, Output
 from backend.functions import read_from_sql
 
@@ -16,8 +17,19 @@ available_countries = deaths_global_df['country'].unique()
 latest_time_period = deaths_global_df['time_period'].max()
 latest_year = latest_time_period.split("-")[0]
 latest_month = calendar.month_name[int(latest_time_period.split("-")[1])]
-deaths_global_latest_df = deaths_global_df[deaths_global_df['time_period'] == latest_time_period]\
+deaths_global_latest_df = deaths_global_df[deaths_global_df['time_period'] == latest_time_period] \
     .groupby('continent', as_index=False).sum()
+recovered_global_df = read_from_sql('covid_viz_hub', 'recovered_global')
+recovered_global_latest_df = recovered_global_df[recovered_global_df['time_period'] == '2021-03'] \
+    .groupby('continent', as_index=False).sum()
+confirmed_global_df = read_from_sql('covid_viz_hub', 'confirmed_global')
+confirmed_global_latest_df = confirmed_global_df[confirmed_global_df['time_period'] == latest_time_period] \
+    .groupby('continent', as_index=False).sum()
+confirmed_global_race_plot = barplot(confirmed_global_df.groupby(['country', 'time_period']).sum().reset_index(),
+                                     item_column='country',
+                                     value_column='cumulative_confirmed',
+                                     time_column='time_period')
+
 
 """ Create graphs """
 deaths_pie = px.pie(deaths_global_latest_df, values='deaths', names='continent',
@@ -46,9 +58,83 @@ cumulative_deaths_choropleth = px.choropleth(deaths_global_df,
                                              hover_name="country",
                                              animation_frame="time_period",
                                              color_continuous_scale='amp',
-                                             labels={'time_period': 'Month', 'iso_alpha_3': 'ISO Code',
+                                             labels={'time_period': 'Month',
+                                                     'iso_alpha_3': 'ISO Code',
                                                      'cumulative_deaths': 'Cumulative Death Count'},
                                              height=600)
+
+recovered_pie = px.pie(recovered_global_latest_df, values='recovered', names='continent',
+                       labels={'continent': 'Continent', 'recovered': 'Recovered Count'})
+recovered_line = px.line(recovered_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
+                         x="time_period", y="recovered", color="continent", markers=True,
+                         labels={'time_period': 'Month', 'recovered': 'Recovered Count', 'continent': 'Continent'})
+recovered_choropleth = px.choropleth(recovered_global_df,
+                                     locations="iso_alpha_3",
+                                     color="recovered",
+                                     hover_name="country",
+                                     animation_frame="time_period",
+                                     color_continuous_scale='agsunset',
+                                     labels={'time_period': 'Month',
+                                             'recovered': 'Recovered Count',
+                                             'iso_alpha_3': 'ISO Code'},
+                                     height=600)
+
+cumulative_recovered_pie = px.pie(recovered_global_latest_df, values='cumulative_recovered', names='continent',
+                                  labels={'continent': 'Continent',
+                                          'cumulative_recovered': 'Cumulative Recovered Count'})
+cumulative_recovered_line = px.line(recovered_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
+                                    x="time_period",
+                                    y="cumulative_recovered",
+                                    labels={'time_period': 'Month',
+                                            'continent': 'Continent',
+                                            'cumulative_recovered': 'Cumulative recovered Count'},
+                                    color="continent",
+                                    markers=True, )
+cumulative_recovered_choropleth = px.choropleth(recovered_global_df,
+                                                locations="iso_alpha_3",
+                                                color="cumulative_recovered",
+                                                hover_name="country",
+                                                animation_frame="time_period",
+                                                color_continuous_scale='amp',
+                                                labels={'time_period': 'Month',
+                                                        'iso_alpha_3': 'ISO Code',
+                                                        'cumulative_recovered': 'Cumulative Recovered Count'},
+                                                height=600)
+
+confirmed_pie = px.pie(confirmed_global_latest_df, values='confirmed', names='continent',
+                       labels={'continent': 'Continent', 'confirmed': 'Confirmed Count'})
+confirmed_line = px.line(confirmed_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
+                         x="time_period", y="confirmed", color="continent", markers=True,
+                         labels={'time_period': 'Month', 'confirmed': 'Confirmed Count', 'continent': 'Continent'})
+confirmed_choropleth = px.choropleth(confirmed_global_df,
+                                     locations="iso_alpha_3",
+                                     color="confirmed",
+                                     hover_name="country",
+                                     animation_frame="time_period",
+                                     color_continuous_scale='agsunset',
+                                     labels={'time_period': 'Month',
+                                             'confirmed': 'Confirmed Count',
+                                             'iso_alpha_3': 'ISO Code'},
+                                     height=600)
+
+cumulative_confirmed_pie = px.pie(confirmed_global_latest_df, values='cumulative_confirmed', names='continent',
+                                  labels={'continent': 'Continent',
+                                          'cumulative_confirmed': 'Cumulative Confirmed Count'})
+cumulative_confirmed_line = px.line(confirmed_global_df.groupby(['continent', 'time_period'], as_index=False).sum(),
+                                    x="time_period", y="cumulative_confirmed", color="continent", markers=True,
+                                    labels={'time_period': 'Month',
+                                            'continent': 'Continent',
+                                            'cumulative_confirmed': 'Cumulative confirmed Count'})
+cumulative_confirmed_choropleth = px.choropleth(confirmed_global_df,
+                                                locations="iso_alpha_3",
+                                                color="cumulative_confirmed",
+                                                hover_name="country",
+                                                animation_frame="time_period",
+                                                color_continuous_scale='amp',
+                                                labels={'time_period': 'Month',
+                                                        'iso_alpha_3': 'ISO Code',
+                                                        'cumulative_confirmed': 'Cumulative Confirmed Count'},
+                                                height=600)
 
 layout = html.Div([
     dbc.Container([
@@ -65,6 +151,10 @@ layout = html.Div([
                              style_header={'backgroundColor': '#25597f', 'color': 'white'},
                              style_cell={'backgroundColor': 'white', 'color': 'black', 'fontSize': 13,
                                          'font-family': 'Nunito Sans', "text-align": "center"}),
+        dash_table.DataTable(id='datatable_confirmed_global', style_table={'overflowX': 'scroll', 'padding': 10},
+                             style_header={'backgroundColor': '#25597f', 'color': 'white'},
+                             style_cell={'backgroundColor': 'white', 'color': 'black', 'fontSize': 13,
+                                         'font-family': 'Nunito Sans', "text-align": "center"}),
 
         dbc.Row([dbc.Col(dbc.Card(html.H3(children='Figures by Continent',
                                           className="text-center text-light bg-dark"),
@@ -78,13 +168,29 @@ layout = html.Div([
                  dbc.Col(html.Div([dcc.Graph(figure=deaths_line)]))]),
         dbc.Row([html.Div([dcc.Graph(figure=deaths_choropleth)])]),
 
-        dbc.Row([dbc.Col(dbc.Card(html.H3(children='Cumulative Figures by Continent',
+        dbc.Row([dbc.Col(dbc.Card(html.H3(children='Cumulative Confirmed Cases by Continent',
+                                          className="text-center text-light bg-dark"),
+                                  body=True, color="dark"),
+                         className="mt-4 mb-4")]),
+        dbc.Row([dbc.Col(html.Div([dcc.Graph(figure=cumulative_confirmed_pie)])),
+                 dbc.Col(html.Div([dcc.Graph(figure=cumulative_confirmed_line)]))]),
+        dbc.Row([html.Div([dcc.Graph(figure=cumulative_confirmed_choropleth)])]),
+
+        dbc.Row([dbc.Col(dbc.Card(html.H3(children='Cumulative Death Cases by Continent',
                                           className="text-center text-light bg-dark"),
                                   body=True, color="dark"),
                          className="mt-4 mb-4")]),
         dbc.Row([dbc.Col(html.Div([dcc.Graph(figure=cumulative_deaths_pie)])),
                  dbc.Col(html.Div([dcc.Graph(figure=cumulative_deaths_line)]))]),
         dbc.Row([html.Div([dcc.Graph(figure=cumulative_deaths_choropleth)])]),
+
+        dbc.Row([dbc.Col(dbc.Card(html.H3(children='Cumulative Recovery Cases by Continent',
+                                          className="text-center text-light bg-dark"),
+                                  body=True, color="dark"),
+                         className="mt-4 mb-4")]),
+        dbc.Row([dbc.Col(html.Div([dcc.Graph(figure=cumulative_recovered_pie)])),
+                 dbc.Col(html.Div([dcc.Graph(figure=cumulative_recovered_line)]))]),
+        dbc.Row([html.Div([dcc.Graph(figure=cumulative_recovered_choropleth)])]),
 
         dbc.Row([dbc.Col(dbc.Card(html.H3(children='Figures by country', className="text-center text-light bg-dark"),
                                   body=True, color="dark"),
@@ -93,6 +199,18 @@ layout = html.Div([
                      value=['United States', 'India'], multi=True,
                      style={'width': '70%', 'margin-left': '5px', 'align': 'center'}),
         dbc.Row([dbc.Col(html.H5(children='Monthly figures', className="text-center"), className="mt-4"), ]),
+        dbc.Row([html.Div([dcc.Graph(figure=confirmed_global_race_plot.plot(
+                                            item_label='Selected Top 10 Countries with Covid-19',
+                                            value_label='cumulative_confirmed',
+                                            frame_duration=600))])]),
+
+        dcc.RadioItems(id='chart_type', options=[{'label': i, 'value': i} for i in ['Confirmed Cases', 'Death Cases']],
+                       value='Confirmed Cases', labelStyle={'display': 'inline-block', "margin-right": "20px"},
+                       style={"text-align": "center"}),
+        dcc.Graph(id='status_country'),
+        dbc.Row([dbc.Col(html.H5(children='Cumulative figures', className="text-center"), className="mt-4"), ]),
+        dcc.Graph(id='cumulative_status_country'),
+
         dcc.Graph(id='deaths_country'),
         dbc.Row([dbc.Col(html.H5(children='Cumulative figures', className="text-center"), className="mt-4"), ]),
         dcc.Graph(id='cumulative_deaths_country'),
@@ -120,6 +238,26 @@ def update_columns(value):
     return data, columns
 
 
+# choose between condensed table and full table
+@app.callback([Output('datatable_confirmed_global', 'data'),
+               Output('datatable_confirmed_global', 'columns')],
+              [Input('table_type', 'value')])
+def update_columns(value):
+    df = confirmed_global_df.tail(1)
+
+    condensed_col = ['continent', 'country', 'iso_alpha_2', 'time_period', 'confirmed', 'cumulative_deaths']
+    full_col = ['index', 'iso_alpha_2', 'iso_alpha_3', 'country', 'continent',
+                'time_period', 'deaths', 'cumulative_confirmed']
+
+    columns = [{"name": i, "id": i} for i in full_col]
+    data = df.to_dict('records')
+    if value == 'Condensed table':
+        columns = [{"name": i, "id": i} for i in condensed_col]
+        data = df.to_dict('records')
+
+    return data, columns
+
+
 # to allow comparison of cases or deaths among countries
 @app.callback([Output('deaths_country', 'figure'),
                Output('cumulative_deaths_country', 'figure')],
@@ -137,3 +275,33 @@ def update_graph(countries_name):
                                                      'country': 'Country'})
 
     return deaths_line_country, cumulative_deaths_line_country
+
+
+@app.callback([Output('status_country', 'figure'),
+               Output('cumulative_status_country', 'figure')],
+              [Input('countries', 'value'),
+               Input('chart_type', 'value')])
+def update_graph(countries_name, value):
+    dfc = deaths_global_df.copy()
+    dfc = dfc[dfc['country'].isin(countries_name)]
+    df1 = confirmed_global_df.copy()
+    df1 = df1[df1['country'].isin(countries_name)]
+    status_line_country = px.line(dfc, x="time_period", y="deaths", color="country", markers=True,
+                                  labels={'time_period': 'Month', 'deaths': 'Death Count',
+                                          'country': 'Country'})
+    cumulative_status_line_country = px.line(dfc, x="time_period", y="cumulative_deaths", color="country", markers=True,
+                                             labels={'country': 'Country',
+                                                     'time_period': 'Month',
+                                                     'cumulative_deaths': 'Cumulative Death Count'})
+    if value == 'Confirmed Cases':
+        status_line_country = px.line(df1, x="time_period", y="confirmed", color="country", markers=True,
+                                      labels={'time_period': 'Month',
+                                              'confirmed': 'confirmed Count',
+                                              'country': 'Country'})
+        cumulative_status_line_country = px.line(df1, x="time_period", y="cumulative_confirmed", color="country",
+                                                 markers=True,
+                                                 labels={'time_period': 'Month',
+                                                         'country': 'Country',
+                                                         'cumulative_confirmed': 'Cumulative confirmed Count'})
+
+    return status_line_country, cumulative_status_line_country

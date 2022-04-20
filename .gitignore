@@ -65,7 +65,8 @@ env/
 venv/
 ENV/
 
-# PyCharm 
+# PyCharm
+.idea/
 .idea/**/workspace.xml 
 .idea/**/tasks.xml 
 .idea/dictionaries 
@@ -79,3 +80,4 @@ ENV/
 .idea/**/gradle.xml 
 .idea/**/libraries 
 *.iws /out/ 
+backend/.DS_Store
