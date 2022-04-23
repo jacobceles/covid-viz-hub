@@ -5,3 +5,10 @@ raceplotly>=0.1.6
 pycountry>=22.3.5
 SQLAlchemy>=1.4.31
 pycountry_convert>=0.7.2
+scipy
+IPython
+ipywidgets
+dash-core-components==2.0.0
+dash-html-components==2.0.0
+# dash-renderer==1.6.0
+dash-table==5.0.0
