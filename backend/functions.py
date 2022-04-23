@@ -2,7 +2,6 @@ import pycountry
 import pandas as pd
 import pycountry_convert as pc
 
-from datetime import datetime
 from sqlalchemy import create_engine
 
 
@@ -13,6 +12,8 @@ def convert_columns_to_lowercase(df):
     """
     df.columns = map(str.lower, df.columns)
     return df
+
+
 def pivot_date_columns(df, ok_columns, value_name):
     """
     :param df: Input dataframe
@@ -21,6 +22,7 @@ def pivot_date_columns(df, ok_columns, value_name):
     :return: A dataframe
     """
     return df.melt(id_vars=ok_columns, var_name="time_period", value_name=value_name)
+
 
 def replace_character_in_column_names(df, char_to_replace, char_to_replace_with):
     """
@@ -173,6 +175,7 @@ def get_country_iso_code_3(df):
     df['iso_alpha_3'] = df['country'].apply(lambda country: pycountry.countries.get(name=country).alpha_3)
     return df
 
+
 def get_cumulative_confirmed(df, level_list):
     """
     :param df: Input dataframe
@@ -181,6 +184,7 @@ def get_cumulative_confirmed(df, level_list):
     """
     df['cumulative_confirmed'] = df.groupby(level_list)['confirmed'].cumsum()
     return df
+
 
 def get_country_continent(df):
     """
@@ -216,7 +220,7 @@ def write_to_sql(df, db_name, table_name):
     :return: A dataframe
     """
     df.reset_index(level=0, drop=True, inplace=True)
-    sql_engine = create_engine('mysql+pymysql://root:ChampionHere@127.0.0.1/{}'.format(db_name), pool_recycle=3600)
+    sql_engine = create_engine('mysql+pymysql://root:@127.0.0.1/{}'.format(db_name), pool_recycle=3600)
     db_connection = sql_engine.connect()
     try:
         df.to_sql(table_name, db_connection, if_exists='replace')
@@ -233,16 +237,17 @@ def read_from_sql(db_name, table_name):
     :param table_name: Table name
     :return: The table as a dataframe
     """
-    sql_engine = create_engine('mysql+pymysql://root:ChampionHere@127.0.0.1/{}'.format(db_name), pool_recycle=3600)
+    sql_engine = create_engine('mysql+pymysql://root:@127.0.0.1/{}'.format(db_name), pool_recycle=3600)
     db_connection = sql_engine.connect()
     df = pd.read_sql("select * from {}.{}".format(db_name, table_name), db_connection)
     db_connection.close()
     return df
 
+
 def racing_bar(df):
     covid = df[["time_period", "country", "Confirmed", "continent", "cumulative_confirmed"]]
     grouped = covid.groupby(['country', 'time_period'])
     covid_confirmed = grouped.sum().reset_index().sort_values(['time_period'], ascending=False)
-    df = (covid_confirmed[covid_confirmed['Date'].eq("05/01/2021")].sort_values(by="Confirmed", ascending=False).head(10))
+    df = (
+        covid_confirmed[covid_confirmed['Date'].eq("05/01/2021")].sort_values(by="Confirmed", ascending=False).head(10))
     return df
-
