@@ -11,8 +11,7 @@ from apps import home_layout, architecture_layout, global_layout,us_layout, indi
 # from app import server # must add this line in order for the app to be deployed successfully on Heroku
 
 # Building the navigation bar
-dropdown = dbc.DropdownMenu(children=[dbc.DropdownMenuItem("Architecture", href="/architecture"),
-                                      dbc.DropdownMenuItem("Global", href="/global"),
+dropdown = dbc.DropdownMenu(children=[dbc.DropdownMenuItem("Global", href="/global"),
                                       dbc.DropdownMenuItem("US", href="/us"),
                                       dbc.DropdownMenuItem("Individual", href="/individual"),
                                       dbc.DropdownMenuItem("SIER model", href="/seir"),],
@@ -44,9 +43,7 @@ app.layout = html.Div([
 @app.callback(dash.dependencies.Output('page-content', 'children'),
               [dash.dependencies.Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/architecture':
-        return architecture_layout.layout
-    elif pathname == '/global':
+    if pathname == '/global':
         return global_layout.layout
     elif pathname == '/us':
         return us_layout.layout

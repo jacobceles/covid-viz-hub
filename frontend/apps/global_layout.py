@@ -207,10 +207,7 @@ layout = html.Div([
         dbc.Row([dbc.Col(html.H5(children='Cumulative figures', className="text-center"), className="mt-4"), ]),
         dcc.Graph(id='cumulative_status_country'),
         dcc.Graph(id='race_bar'),
-        # dbc.Row([html.Div([dcc.Graph(figure=confirmed_global_raceplot.plot(item_label='Selected Top 10 Countries with Covid-19',
-        #                                      value_label='cumulative_confirmed', frame_duration=600))])])
-        # dbc.Row([html.Div([dcc.Graph(figure=confirmed_global_raceplot.plot(item_label='Selected Top 10 Countries with Covid-19',
-        #                                      value_label='cumulative_confirmed', frame_duration=600))])])
+
     ])
 ])
 

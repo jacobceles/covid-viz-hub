@@ -87,4 +87,5 @@ ENV/
 .idea/**/uiDesigner.xml 
 .idea/**/gradle.xml 
 .idea/**/libraries 
-*.iws /out/ 
+*.iws /out/
+backend/.DS_Store
