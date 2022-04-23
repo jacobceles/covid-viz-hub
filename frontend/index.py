@@ -7,14 +7,15 @@ from dash import html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from app import app
-from apps import home_layout, architecture_layout, global_layout,us_layout, individual_layout
+from apps import home_layout, architecture_layout, global_layout,us_layout, individual_layout, SIERmodel_layout
 # from app import server # must add this line in order for the app to be deployed successfully on Heroku
 
 # Building the navigation bar
 dropdown = dbc.DropdownMenu(children=[dbc.DropdownMenuItem("Architecture", href="/architecture"),
                                       dbc.DropdownMenuItem("Global", href="/global"),
                                       dbc.DropdownMenuItem("US", href="/us"),
-                                      dbc.DropdownMenuItem("Individual", href="/individual"), ],
+                                      dbc.DropdownMenuItem("Individual", href="/individual"),
+                                      dbc.DropdownMenuItem("SIER model", href="/seir"),],
                             nav=True, in_navbar=True, label="Explore", )
 
 navbar = dbc.Navbar(
@@ -51,6 +52,8 @@ def display_page(pathname):
         return us_layout.layout
     elif pathname == '/individual':
         return individual_layout.layout
+    elif pathname == '/seir':
+        return SIERmodel_layout.layout
     else:
         return home_layout.layout
 
