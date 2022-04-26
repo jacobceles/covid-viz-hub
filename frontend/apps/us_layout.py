@@ -112,9 +112,12 @@ layout = html.Div([
                          className="mt-4"), ]),
         dbc.Row([html.Div([dcc.Graph(figure=confirmed_choropleth)])]),
 
-        dbc.Row([dbc.Col(html.H5(children='Progress of covid deaths across states in the USA', className="text-center"),
-                         className="mt-4"), ]),
+        dbc.Row([dbc.Col(html.H5(children='Progress of covid deaths across states in the USA',
+                                 className="text-center"), className="mt-4"), ]),
         dbc.Row([html.Div([dcc.Graph(figure=deaths_choropleth)])]),
+
+        dbc.Row([dbc.Col(html.H5(children='Progress of covid deaths across states in the USA on a cumulative scale', className="text-center"),
+                         className="mt-4"), ]),
         dbc.Row([html.Div([dcc.Graph(figure=cumulative_deaths_choropleth)])]),
 
         dbc.Row([dbc.Col(dbc.Card(html.H3(children='Comparison between states',
