@@ -95,4 +95,4 @@ A full video demo of the UI can be viewed in the [YouTube Video]() (redirects to
 ## Contributors
 - [Jacob Celestine](https://jacobcelestine.com/)
 - [Nisha Kumari](https://github.com/nishabbsr)
-- [Siha Sun](https://github.com/sihaosunru)
+- [Sihao Sun](https://github.com/sihaosunru)
