@@ -23,7 +23,7 @@ Here are some features of this implementation:
 - Comparative Analysis on different levels: Global (Continent), US, and Individual.
 
 ## Problem Statements
-<b>Global Level</b>
+<b><u>Global Level</u></b>
 <ol>
     <li>Latest death count across continents</li>
     <li>Compare monthly deaths of countries</li>
@@ -32,7 +32,7 @@ Here are some features of this implementation:
     <li>Trend of deaths across months for different continents</li>
     <li>Recovery rate of Coronavirus across the world over the year?</li>
 </ol>
-<b>US Level</b>
+<b><u>US Level</u></b>
 <ol>
     <li>Progress of covid deaths across states</li>
     <li>What was the situation in local hospitals like?</li>
@@ -40,14 +40,14 @@ Here are some features of this implementation:
     <li>Which provinces accounted for the greatest number of deaths?</li>
     <li>Comparison between states based on percentage of deaths in each state?</li>
 </ol>
-<b>Individual Level</b>
+<b><u>Individual Level</u></b>
 <ol>
     <li>Which race has the most deaths?</li>
     <li>Which gender has the most deaths?</li>
     <li>Which age group has the most deaths?</li>
     <li>Was underlying condition a major factor in the deaths occurred?</li>
 </ol>
-<b>SEIR Model</b>
+<b><u>SEIR Model</u></b>
 <ol>
     <li>Predict the trend based on factors like lockdown, vaccinations etc.</li>
 </ol>
