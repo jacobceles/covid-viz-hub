@@ -52,7 +52,7 @@ Here are some features of this implementation:
     <li>Predict the trend based on factors like lockdown, vaccinations etc.</li>
 </ol>
 
-## How to Use
+## Installation Procedures
 <ol>
     <li>Clone the repository to your local machine.</li>
     <li>Start your local instance of SQL.</li>
@@ -63,6 +63,9 @@ Here are some features of this implementation:
     <li>Run backend/main.py to run the backedn ETL pipeline.</li>
     <li>Once done, run frontend/index.py to get a link for the WebApp.</li>
 </ol>
+
+## Sample Data
+Sample data can be found in this [folder](https://github.com/jacobceles/covid-viz-hub/tree/main/backend/data).
 
 ## Implementation
 ![High Level Design](Documents/HLD.png?raw=true "High Level Design")
