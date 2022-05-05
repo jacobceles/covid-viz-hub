@@ -91,7 +91,7 @@ Sample data can be found in this [folder](https://github.com/jacobceles/covid-vi
     └── requirements.py                         # Required packages to run the frontend and backend
 
 ## Output
-A full video demo of the UI can be viewed in the [YouTube Video]() (redirects to YouTube).
+A full video demo of the UI can be viewed in the [YouTube Video](https://youtu.be/4epW-EcHPYk) (redirects to YouTube).
 
 ## Screenshots
 ![Home Page](Documents/home.png?raw=true)
