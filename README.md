@@ -102,7 +102,6 @@ A full video demo of the UI can be viewed in the [YouTube Video](https://youtu.b
 ![Home Page](Documents/us_1.png?raw=true)
 ![Home Page](Documents/us_2.png?raw=true)
 ![Home Page](Documents/us_3.png?raw=true)
-![Home Page](Documents/us_4.png?raw=true)
 ![Home Page](Documents/individual.png?raw=true)
 ![Home Page](Documents/seir_1.png?raw=true)
 ![Home Page](Documents/seir_2.png?raw=true)
